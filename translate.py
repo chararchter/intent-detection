@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from typing import List
 
+from transformers import pipeline
+
 
 def get_data(path: str) -> List[str]:
     """ Read text file in the specified path and append each line without \n as an element to an array.
@@ -53,18 +55,27 @@ def read_source_text() -> List[str]:
     return lv_test, lv_train, ru_test, ru_train, et_test, et_train, lt_test, lt_train
 
 
-def write_to_file(source_language: str, dataset: str, translated_text: List[dict]):
+def write_to_file(source_language: str, dataset_type: str, translated_text: List[dict]):
     """ Write the translated text to file.
     utf-8 encoding is specified in case the source text wasn't translated and still has the source language characters.
 
     :param source_language: "lv", "ru", "et" or "lt"
-    :param dataset: "test" or "train"
+    :param dataset_type: "test" or "train"
     :param translated_text: array of dictionaries where key='translation_text' and value is the translated text
     e.g. [{'translation_text': "Taxi's waiting."}]
     """
-    with open(f"{source_language}{dataset}.txt", "w", encoding="utf-8") as f:
+    with open(f"{source_language}_{dataset_type}.txt", "w", encoding="utf-8") as f:
         for line in translated_text:
             f.write(line["translation_text"] + "\n")
 
 
+def translate_to_english(dataset: List[str], model_name: str, source_language: str, dataset_type: str):
+    pipe = pipeline("translation", model=model_name)
+    translated_text = pipe(dataset)
+    print(translated_text)
+    write_to_file(source_language, dataset_type, translated_text)
+
+
 lv_test, lv_train, ru_test, ru_train, et_test, et_train, lt_test, lt_train = read_source_text()
+
+translate_to_english(et_test, "Helsinki-NLP/opus-mt-tc-big-et-en", "et", "test")
