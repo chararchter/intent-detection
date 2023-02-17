@@ -2,5 +2,10 @@ tensorflow==2.11.0
 jupyterlab
 datasets
 transformers
-git+https://huggingface.co/bert-base-multilingual-cased
 matplotlib
+sentencepiece
+git+https://huggingface.co/bert-base-multilingual-cased
+git+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-lv-en
+git+https://huggingface.co/Helsinki-NLP/opus-mt-ru-en
+git+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-et-en
+git+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-lt-en
