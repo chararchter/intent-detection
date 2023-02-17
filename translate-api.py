@@ -19,7 +19,7 @@ def query(payload: str, api_url: str) -> dict:
     return json.loads(response.content.decode("utf-8"))
 
 
-def get_data(path: str) -> List[str]:
+def read_file(path: str) -> List[str]:
     """ Read text file in the specified path and append each line without \n as an element to an array.
     Encoding is specified to correctly read files in Russian.
 
@@ -34,7 +34,7 @@ def get_data(path: str) -> List[str]:
         return array
 
 
-def read_source_text(dataset_type: str, source_language: str = None, labels: bool = True) -> List[str]:
+def get_source_text(dataset_type: str, source_language: str = None, labels: bool = True) -> List[str]:
     """ Wrapper for get_data that provides file path.
     Prompts in all languages are in the same order, therefore they use the same label files. So please be careful
     to use the correct argument for labels, as label=True returns labels regardless of specified source_language
@@ -50,32 +50,33 @@ def read_source_text(dataset_type: str, source_language: str = None, labels: boo
     :return: array of file contents for specified file
     """
     if labels:
-        return get_data(f"NLU-datasets\chatbot\chatbot_{dataset_type}_ans.txt")
+        return read_file(f"NLU-datasets\chatbot\chatbot_{dataset_type}_ans.txt")
     else:
-        return get_data(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
+        return read_file(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
 
 
-def translate_to_file(source_language: str, dataset_type: str, dataset: List[str], api_url: str):
+def translate_to_file(dataset_type: str, source_language: str, dataset: List[str], api_url: str):
     """ Write the translated text to file.
     utf-8 encoding is specified in case the source text wasn't translated and still has the source language characters.
 
-    :param source_language: "lv", "ru", "et" or "lt"
     :param dataset_type: "test" or "train"
-    :param translated_text: array of arrays with one dictionary where key='translation_text' and value is the translated text
-    e.g. [[{'translation_text': "Taxi's waiting."}]]
+    :param source_language: "lv", "ru", "et" or "lt"
+    :param dataset: dataset of source_language and type e.g. "lv_train"
+    :param api_url: API endpoint
     """
     with open(f"{source_language}_{dataset_type}.txt", "w", encoding="utf-8") as f:
         for line in dataset:
             output = query(line, api_url)
             if "error" in output:
                 print(output)
-                f.write("error, og line:" + line + "\n")
+                f.write("error, original line:" + line + "\n")
             else:
                 f.write(output[0]["translation_text"] + "\n")
 
 
 def translate(dataset: List[str], api_url: str) -> List[str]:
-    """ Iterate through training set and translate each line
+    """ Iterate through training set and translate each line. Not using this, because it is easier to
+    translate a few missing lines than terminate on the first error
     """
     array = []
     for line in dataset:
@@ -87,15 +88,25 @@ def translate(dataset: List[str], api_url: str) -> List[str]:
     return array
 
 
-lv_test = read_source_text("test", "lv", False)
-ru_test = read_source_text("test", "ru", False)
-et_test = read_source_text("test", "et", False)
-lt_test = read_source_text("test", "lt", False)
+lv_test = get_source_text("test", "lv", False)
+ru_test = get_source_text("test", "ru", False)
+et_test = get_source_text("test", "et", False)
+lt_test = get_source_text("test", "lt", False)
 
-lv_train = read_source_text("train", "lv", False)
-ru_train = read_source_text("train", "ru", False)
-et_train = read_source_text("train", "et", False)
-lt_train = read_source_text("train", "lt", False)
+lv_train = get_source_text("train", "lv", False)
+ru_train = get_source_text("train", "ru", False)
+et_train = get_source_text("train", "et", False)
+lt_train = get_source_text("train", "lt", False)
 
 
 translate_to_file(source_language="lv", dataset_type="test", dataset=lv_test, api_url=API_URL_LV)
+translate_to_file(source_language="lv", dataset_type="train", dataset=lv_train, api_url=API_URL_LV)
+
+translate_to_file(source_language="ru", dataset_type="test", dataset=ru_test, api_url=API_URL_RU)
+translate_to_file(source_language="ru", dataset_type="train", dataset=ru_test, api_url=API_URL_RU)
+
+translate_to_file(source_language="et", dataset_type="test", dataset=et_test, api_url=API_URL_ET)
+translate_to_file(source_language="et", dataset_type="train", dataset=et_test, api_url=API_URL_ET)
+
+translate_to_file(source_language="lt", dataset_type="test", dataset=lt_test, api_url=API_URL_LT)
+translate_to_file(source_language="lt", dataset_type="train", dataset=lt_test, api_url=API_URL_LT)
