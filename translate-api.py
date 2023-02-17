@@ -1,6 +1,4 @@
 import json
-import os
-from pathlib import Path
 from typing import List
 
 import requests
@@ -45,41 +43,25 @@ def get_data(path: str) -> List[str]:
         return array
 
 
-def read_source_text() -> List[str]:
-    """ Iterate through files in path_list and read their contents
-    :return: arrays of test and train datasets for each language
+def read_source_text(dataset_type: str, source_language: str = None, labels: bool = True) -> List[str]:
+    """ Wrapper for get_data that provides file path.
+    Prompts in all languages are in the same order, therefore they use the same label files. So please be careful
+    to use the correct argument for labels, as label=True returns labels regardless of specified source_language
+
+    Usage examples:
+    prompts: read_source_text("test", "et", False)
+
+    labels: read_source_text("test")
+
+    :param dataset_type: "test" or "train"
+    :param source_language: "lv", "ru", "et", "lt"
+    :param labels: does the file being read contain labels
+    :return: array of file contents for specified file
     """
-    if "NLU-datasets" not in os.getcwd():
-        os.chdir("./NLU-datasets")
-
-    path_list = Path("chatbot").glob("**/*.txt")
-
-    for path in path_list:
-        # because path is object not string
-        path_in_str = str(path)
-        # print(path_in_str)
-        # if path_in_str == "chatbot\lv\chatbot_test_q.txt":
-        #     lv_test = get_data(path_in_str)
-        # elif path_in_str == "chatbot\lv\chatbot_train_q.txt":
-        #     lv_train = get_data(path_in_str)
-        # elif path_in_str == "chatbot\\ru\chatbot_test_q.txt":
-        #     ru_test = get_data(path_in_str)
-        # elif path_in_str == "chatbot\\ru\chatbot_train_q.txt":
-        #     ru_train = get_data(path_in_str)
-        if path_in_str == "chatbot\et\chatbot_test_q.txt":
-            et_test = get_data(path_in_str)
-        # elif path_in_str == "chatbot\et\chatbot_train_q.txt":
-        #     et_train = get_data(path_in_str)
-        # elif path_in_str == "chatbot\lt\chatbot_test_q.txt":
-        #     lt_test = get_data(path_in_str)
-        # elif path_in_str == "chatbot\lt\chatbot_train_q.txt":
-        #     lt_train = get_data(path_in_str)
-
-    if "NLU-datasets" in os.getcwd():
-        os.chdir("..")
-
-    # return lv_test, lv_train, ru_test, ru_train, et_test, et_train, lt_test, lt_train
-    return et_test
+    if labels:
+        return get_data(f"NLU-datasets\chatbot\chatbot_{dataset_type}_ans.txt")
+    else:
+        return get_data(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
 
 
 def write_to_file(source_language: str, dataset_type: str, translated_text: List[dict]):
@@ -101,13 +83,10 @@ def translate_to_english(dataset: List[str], source_language: str, dataset_type:
     write_to_file(source_language, dataset_type, translated_text)
 
 
-et_test = read_source_text()
-
-
 def translate_to_english(dataset: List[str], source_language: str, dataset_type: str):
     translated_text = translate(dataset)
     write_to_file(source_language, dataset_type, translated_text)
 
 
-translate_to_english(et_test, "et", "test")
-# translate_to_english(et_train, "et", "train")
+data = read_source_text("test", "et", False)
+print(data)
