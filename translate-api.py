@@ -31,14 +31,13 @@ def get_data(path: str) -> List[str]:
     """ Read text file in the specified path and append each line without \n as an element to an array.
     Encoding is specified to correctly read files in Russian.
 
-    :param path: path e.g. "chatbot\chatbot_train_ans.txt"
+    :param path: path e.g. "NLU-datasets\chatbot\chatbot_train_ans.txt"
     :return: array e.g. ['FindConnection', 'FindConnection', ..., 'FindConnection']
     """
+    print(path)
     with open(path, encoding='utf-8') as f:
         array = []
         for line in list(f):
-            # print(line)
-            print(line.split('\n')[0])
             array.append(line.split('\n')[0])
         return array
 
@@ -78,15 +77,28 @@ def write_to_file(source_language: str, dataset_type: str, translated_text: List
             f.write(line[0]["translation_text"] + "\n")
 
 
-def translate_to_english(dataset: List[str], source_language: str, dataset_type: str):
-    translated_text = translate(dataset)
-    write_to_file(source_language, dataset_type, translated_text)
+def translate(dataset: List[str]) -> List[str]:
+    """ Iterate through training set and translate each line
+    """
+    array = []
+    for line in dataset:
+        output = query(line)
+
+        if "error" in output:
+            raise ValueError("Model is currently loading or Service Unavailable, try again")
+        array.append(output)
+    return array
 
 
-def translate_to_english(dataset: List[str], source_language: str, dataset_type: str):
-    translated_text = translate(dataset)
-    write_to_file(source_language, dataset_type, translated_text)
+lv_test = read_source_text("test", "lv", False)
+ru_test = read_source_text("test", "ru", False)
+et_test = read_source_text("test", "et", False)
+lt_test = read_source_text("test", "lt", False)
+
+lv_train = read_source_text("train", "lv", False)
+ru_train = read_source_text("train", "ru", False)
+et_train = read_source_text("train", "et", False)
+lt_train = read_source_text("train", "lt", False)
 
 
-data = read_source_text("test", "et", False)
-print(data)
+lv_test_en = translate(lv_test)
