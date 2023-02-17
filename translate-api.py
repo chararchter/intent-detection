@@ -5,26 +5,18 @@ import requests
 
 from secret_api_token import API_TOKEN
 
-API_URL = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-tc-big-et-en"
+API_URL_LV = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-tc-big-lv-en"
+API_URL_RU = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-ru-en"
+API_URL_ET = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-tc-big-et-en"
+API_URL_LT = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-tc-big-lt-en"
+
 headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
 
-def query(payload):
+def query(payload: str, api_url: str) -> dict:
     data = json.dumps(payload)
-    response = requests.request("POST", API_URL, headers=headers, data=data)
+    response = requests.request("POST", api_url, headers=headers, data=data)
     return json.loads(response.content.decode("utf-8"))
-
-
-def translate(source_text: List[str]) -> List[str]:
-    """ Query each element of the array
-    """
-    target_text = []
-
-    for line in source_text:
-        translated_line = query(line)
-        print(translated_line)
-        target_text.append(translated_line)
-    return target_text
 
 
 def get_data(path: str) -> List[str]:
@@ -63,7 +55,7 @@ def read_source_text(dataset_type: str, source_language: str = None, labels: boo
         return get_data(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
 
 
-def write_to_file(source_language: str, dataset_type: str, translated_text: List[dict]):
+def translate_to_file(source_language: str, dataset_type: str, dataset: List[str], api_url: str):
     """ Write the translated text to file.
     utf-8 encoding is specified in case the source text wasn't translated and still has the source language characters.
 
@@ -73,16 +65,21 @@ def write_to_file(source_language: str, dataset_type: str, translated_text: List
     e.g. [[{'translation_text': "Taxi's waiting."}]]
     """
     with open(f"{source_language}_{dataset_type}.txt", "w", encoding="utf-8") as f:
-        for line in translated_text:
-            f.write(line[0]["translation_text"] + "\n")
+        for line in dataset:
+            output = query(line, api_url)
+            if "error" in output:
+                print(output)
+                f.write("error, og line:" + line + "\n")
+            else:
+                f.write(output[0]["translation_text"] + "\n")
 
 
-def translate(dataset: List[str]) -> List[str]:
+def translate(dataset: List[str], api_url: str) -> List[str]:
     """ Iterate through training set and translate each line
     """
     array = []
     for line in dataset:
-        output = query(line)
+        output = query(line, api_url)
 
         if "error" in output:
             raise ValueError("Model is currently loading or Service Unavailable, try again")
@@ -101,4 +98,4 @@ et_train = read_source_text("train", "et", False)
 lt_train = read_source_text("train", "lt", False)
 
 
-lv_test_en = translate(lv_test)
+translate_to_file(source_language="lv", dataset_type="test", dataset=lv_test, api_url=API_URL_LV)
