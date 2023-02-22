@@ -26,7 +26,7 @@ def read_file(path: str) -> List[str]:
     :param path: path e.g. "NLU-datasets\chatbot\chatbot_train_ans.txt"
     :return: array e.g. ['FindConnection', 'FindConnection', ..., 'FindConnection']
     """
-    print(path)
+    # print(path)
     with open(path, encoding='utf-8') as f:
         array = []
         for line in list(f):
@@ -34,25 +34,14 @@ def read_file(path: str) -> List[str]:
         return array
 
 
-def get_source_text(dataset_type: str, source_language: str = None, labels: bool = True) -> List[str]:
+def get_source_text(dataset_type: str, source_language: str) -> List[str]:
     """ Wrapper for get_data that provides file path.
-    Prompts in all languages are in the same order, therefore they use the same label files. So please be careful
-    to use the correct argument for labels, as label=True returns labels regardless of specified source_language
-
-    Usage examples:
-    prompts: read_source_text("test", "et", False)
-
-    labels: read_source_text("test")
 
     :param dataset_type: "test" or "train"
     :param source_language: "lv", "ru", "et", "lt"
-    :param labels: does the file being read contain labels
     :return: array of file contents for specified file
     """
-    if labels:
-        return read_file(f"NLU-datasets\chatbot\chatbot_{dataset_type}_ans.txt")
-    else:
-        return read_file(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
+    return read_file(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
 
 
 def translate_to_file(dataset_type: str, source_language: str, dataset: List[str], api_url: str):
@@ -88,25 +77,25 @@ def translate(dataset: List[str], api_url: str) -> List[str]:
     return array
 
 
-lv_test = get_source_text("test", "lv", False)
-ru_test = get_source_text("test", "ru", False)
-et_test = get_source_text("test", "et", False)
-lt_test = get_source_text("test", "lt", False)
+lv_test = get_source_text("test", "lv")
+ru_test = get_source_text("test", "ru")
+et_test = get_source_text("test", "et")
+lt_test = get_source_text("test", "lt")
 
-lv_train = get_source_text("train", "lv", False)
-ru_train = get_source_text("train", "ru", False)
-et_train = get_source_text("train", "et", False)
-lt_train = get_source_text("train", "lt", False)
+lv_train = get_source_text("train", "lv")
+ru_train = get_source_text("train", "ru")
+et_train = get_source_text("train", "et")
+lt_train = get_source_text("train", "lt")
 
 
 translate_to_file(source_language="lv", dataset_type="test", dataset=lv_test, api_url=API_URL_LV)
 translate_to_file(source_language="lv", dataset_type="train", dataset=lv_train, api_url=API_URL_LV)
 
 translate_to_file(source_language="ru", dataset_type="test", dataset=ru_test, api_url=API_URL_RU)
-translate_to_file(source_language="ru", dataset_type="train", dataset=ru_test, api_url=API_URL_RU)
+translate_to_file(source_language="ru", dataset_type="train", dataset=ru_train, api_url=API_URL_RU)
 
 translate_to_file(source_language="et", dataset_type="test", dataset=et_test, api_url=API_URL_ET)
-translate_to_file(source_language="et", dataset_type="train", dataset=et_test, api_url=API_URL_ET)
+translate_to_file(source_language="et", dataset_type="train", dataset=et_train, api_url=API_URL_ET)
 
 translate_to_file(source_language="lt", dataset_type="test", dataset=lt_test, api_url=API_URL_LT)
-translate_to_file(source_language="lt", dataset_type="train", dataset=lt_test, api_url=API_URL_LT)
+translate_to_file(source_language="lt", dataset_type="train", dataset=lt_train, api_url=API_URL_LT)
