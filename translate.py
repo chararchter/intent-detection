@@ -1,17 +1,16 @@
-import os
-from pathlib import Path
 from typing import List
 
 from transformers import pipeline
 
 
-def get_data(path: str) -> List[str]:
+def read_file(path: str) -> List[str]:
     """ Read text file in the specified path and append each line without \n as an element to an array.
     Encoding is specified to correctly read files in Russian.
 
-    :param path: path e.g. "chatbot\chatbot_train_ans.txt"
+    :param path: path e.g. "NLU-datasets\chatbot\chatbot_train_ans.txt"
     :return: array e.g. ['FindConnection', 'FindConnection', ..., 'FindConnection']
     """
+    # print(path)
     with open(path, encoding='utf-8') as f:
         array = []
         for line in list(f):
@@ -19,54 +18,47 @@ def get_data(path: str) -> List[str]:
         return array
 
 
-def read_source_text() -> List[str]:
-    """ Iterate through files in path_list and read their contents
-    :return: arrays of test and train datasets for each language
+def get_source_text(dataset_type: str, source_language: str) -> List[str]:
+    """ Wrapper for get_data that provides file path.
+
+    :param dataset_type: "test" or "train"
+    :param source_language: "lv", "ru", "et", "lt"
+    :return: array of file contents for specified file
     """
-    if "NLU-datasets" not in os.getcwd():
-        os.chdir("./NLU-datasets")
-
-    path_list = Path("chatbot").glob("**/*.txt")
-
-    for path in path_list:
-        # because path is object not string
-        path_in_str = str(path)
-        # print(path_in_str)
-        if path_in_str == "chatbot\lv\chatbot_test_q.txt":
-            lv_test = get_data(path_in_str)
-        elif path_in_str == "chatbot\lv\chatbot_train_q.txt":
-            lv_train = get_data(path_in_str)
-        elif path_in_str == "chatbot\\ru\chatbot_test_q.txt":
-            ru_test = get_data(path_in_str)
-        elif path_in_str == "chatbot\\ru\chatbot_train_q.txt":
-            ru_train = get_data(path_in_str)
-        elif path_in_str == "chatbot\et\chatbot_test_q.txt":
-            et_test = get_data(path_in_str)
-        elif path_in_str == "chatbot\et\chatbot_train_q.txt":
-            et_train = get_data(path_in_str)
-        elif path_in_str == "chatbot\lt\chatbot_test_q.txt":
-            lt_test = get_data(path_in_str)
-        elif path_in_str == "chatbot\lt\chatbot_train_q.txt":
-            lt_train = get_data(path_in_str)
-
-    if "NLU-datasets" in os.getcwd():
-        os.chdir("..")
-
-    return lv_test, lv_train, ru_test, ru_train, et_test, et_train, lt_test, lt_train
+    return read_file(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
 
 
-def write_to_file(source_language: str, dataset_type: str, translated_text: List[dict]):
+def translate_to_file(dataset_type: str, source_language: str, dataset: List[str], model_name: str):
+    """ Write the translated text to file.
+    utf-8 encoding is specified in case the source text wasn't translated and still has the source language characters.
+
+    :param dataset_type: "test" or "train"
+    :param source_language: "lv", "ru", "et" or "lt"
+    :param dataset: dataset of source_language and type e.g. "lv_train"
+    :param model_name: model name e.g. "opus-mt-tc-big-et-en"
+    """
+    pipe = pipeline("translation", model=model_name)
+    for line in dataset:
+        print(line)
+        output = pipe(line)
+        print(output)
+        if "error" in output:
+            print(output)
+            write_to_file(source_language, dataset_type, "error, original line:" + line)
+        else:
+            write_to_file(source_language, dataset_type, output[0]["translation_text"])
+
+
+def write_to_file(source_language: str, dataset_type: str, output: str):
     """ Write the translated text to file.
     utf-8 encoding is specified in case the source text wasn't translated and still has the source language characters.
 
     :param source_language: "lv", "ru", "et" or "lt"
     :param dataset_type: "test" or "train"
-    :param translated_text: array of dictionaries where key='translation_text' and value is the translated text
-    e.g. [{'translation_text': "Taxi's waiting."}]
+    :param output: translated text or error and sentence in original language
     """
-    with open(f"{source_language}_{dataset_type}.txt", "w", encoding="utf-8") as f:
-        for line in translated_text:
-            f.write(line["translation_text"] + "\n")
+    with open(f"{source_language}_{dataset_type}.txt", "a", encoding="utf-8") as f:
+        f.write(output + "\n")
 
 
 def translate_to_english(dataset: List[str], model_name: str, source_language: str, dataset_type: str):
@@ -76,6 +68,18 @@ def translate_to_english(dataset: List[str], model_name: str, source_language: s
     write_to_file(source_language, dataset_type, translated_text)
 
 
-lv_test, lv_train, ru_test, ru_train, et_test, et_train, lt_test, lt_train = read_source_text()
+lv_test = get_source_text("test", "lv")
+ru_test = get_source_text("test", "ru")
+et_test = get_source_text("test", "et")
+lt_test = get_source_text("test", "lt")
 
-translate_to_english(et_test, "Helsinki-NLP/opus-mt-tc-big-et-en", "et", "test")
+lv_train = get_source_text("train", "lv")
+ru_train = get_source_text("train", "ru")
+et_train = get_source_text("train", "et")
+lt_train = get_source_text("train", "lt")
+
+translate_to_file(source_language="ru", dataset_type="test", dataset=ru_test, model_name=".\opus-mt-ru-en")
+translate_to_file(source_language="ru", dataset_type="train", dataset=ru_train, model_name=".\opus-mt-ru-en")
+
+translate_to_file(source_language="et", dataset_type="test", dataset=et_test, model_name=".\opus-mt-tc-big-et-en")
+translate_to_file(source_language="et", dataset_type="train", dataset=et_train, model_name=".\opus-mt-tc-big-et-en")
