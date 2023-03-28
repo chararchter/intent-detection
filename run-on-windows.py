@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -42,8 +43,8 @@ def read_file(path: str) -> List[str]:
     """
     with open(path, encoding='utf-8') as f:
         array = []
-        for line in list(f):
-            array.append(line.split('\n')[0])
+        for line in f:
+            array.append(line)
         return array
 
 
@@ -59,6 +60,10 @@ def get_source_text(dataset_type: str, source_language: str = None, labels: bool
     :param labels: does the file being read contain labels
     :return: array of file contents for specified file
     """
+    paths = list(os.walk())
+    paths_in_bulk = "\n".join(paths)
+    match = re.search(paths_in_bulk, f"\n.*{source_language}.*{dataset_type}.txt\n")
+
     if labels:
         return read_file(f"NLU-datasets\chatbot\chatbot_{dataset_type}_ans.txt")
     elif machine_translated:
