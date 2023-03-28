@@ -11,7 +11,7 @@ from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from transformers import BertTokenizer, TFBertModel
-
+from config import PROJECT_ROOT_PATH
 
 # reload function again without restarting kernel
 # from importlib import reload
@@ -73,6 +73,20 @@ def get_source_text(dataset_type: str, source_language: str = None, labels: bool
 
 
 # Read the NLU-datasets in their original source languages
+languages = ["en", "lv"]
+translateable_languages = languages.remove("en")
+datasets = {
+    "test": languages,
+    "train": languages
+}
+
+def get_dataset(datasets, translated, need_labels=True):
+    results = dict()
+    for key, value in datasets.items():
+        if need_labels:
+            results.update({f"{key}_labels": get_source_text(dataset_type=key, labels=True)})
+        for lang in value:
+            results.update({f"{key}_{value}": get_source_text(key, lang)})
 
 en_test = get_source_text("test", "en")
 lv_test = get_source_text("test", "lv")
@@ -110,8 +124,8 @@ print(lv_test_en[0])
 # ## Model and tokenizer
 
 
-model_name = "bert-base-multilingual-cased"  # loading from huggingface
-model_name = "./bert-base-multilingual-cased"  # loading from local path
+# model_name = "bert-base-multilingual-cased"  # loading from huggingface
+model_name = PROJECT_ROOT_PATH / "bert-base-multilingual-cased"  # loading from local path
 
 tokenizer = BertTokenizer.from_pretrained(model_name)
 model_bert = TFBertModel.from_pretrained(model_name)
