@@ -1,17 +1,17 @@
-import re
 from typing import List
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import tensorflow as tf
-from keras.layers import Dense, Conv1D, Dropout
-from keras.models import Sequential
+from keras import Sequential
+from keras.layers import Dense, Dropout
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from transformers import BertTokenizer, TFBertModel
-from config import PROJECT_ROOT_PATH
+from transformers import Conv1D
+
+from model import tokenizer, model_bert
+
 
 # reload function again without restarting kernel
 # from importlib import reload
@@ -44,11 +44,12 @@ def read_file(path: str) -> List[str]:
     with open(path, encoding='utf-8') as f:
         array = []
         for line in f:
-            array.append(line)
+            array.append(line.rstrip("\n"))
         return array
 
 
-def get_source_text(dataset_type: str, source_language: str = None, labels: bool = False, machine_translated: bool = False) -> List[str]:
+def get_source_text(dataset_type: str, source_language: str = None, labels: bool = False,
+                    machine_translated: bool = False) -> List[str]:
     """ Wrapper for read_file that provides file path.
     Prompts in all languages are in the same order, therefore they use the same label files. So please be careful
     to use the correct argument for labels, as label=True returns labels regardless of specified source_language
@@ -60,10 +61,6 @@ def get_source_text(dataset_type: str, source_language: str = None, labels: bool
     :param labels: does the file being read contain labels
     :return: array of file contents for specified file
     """
-    paths = list(os.walk())
-    paths_in_bulk = "\n".join(paths)
-    match = re.search(paths_in_bulk, f"\n.*{source_language}.*{dataset_type}.txt\n")
-
     if labels:
         return read_file(f"NLU-datasets\chatbot\chatbot_{dataset_type}_ans.txt")
     elif machine_translated:
@@ -72,115 +69,83 @@ def get_source_text(dataset_type: str, source_language: str = None, labels: bool
         return read_file(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
 
 
-# Read the NLU-datasets in their original source languages
-languages = ["en", "lv"]
-translateable_languages = languages.remove("en")
-datasets = {
-    "test": languages,
-    "train": languages
-}
-
-def get_dataset(datasets, translated, need_labels=True):
+def get_dataset(datasets: dict, need_labels: bool = True) -> dict:
+    """
+    :param datasets:
+    :param need_labels: redundant argument, i'm gonna remove it later
+    :return: dictionary with dataset type, language and optional labels and '_en' as keys and list of input data as values
+    """
     results = dict()
     for key, value in datasets.items():
         if need_labels:
             results.update({f"{key}_labels": get_source_text(dataset_type=key, labels=True)})
         for lang in value:
-            results.update({f"{key}_{value}": get_source_text(key, lang)})
-
-en_test = get_source_text("test", "en")
-lv_test = get_source_text("test", "lv")
-ru_test = get_source_text("test", "ru")
-et_test = get_source_text("test", "et")
-lt_test = get_source_text("test", "lt")
-
-en_train = get_source_text("train", "en")
-lv_train = get_source_text("train", "lv")
-ru_train = get_source_text("train", "ru")
-et_train = get_source_text("train", "et")
-lt_train = get_source_text("train", "lt")
-
-train_answers = get_source_text(dataset_type="train", labels=True)
-test_answers = get_source_text(dataset_type="test", labels=True)
-
-assert len(train_answers) == len(en_train)
-
-# Read non-English NLU-datasets that have been pre-machine-translated to English
-
-lv_test_en = get_source_text("test", "lv", machine_translated=True)
-ru_test_en = get_source_text("test", "ru", machine_translated=True)
-et_test_en = get_source_text("test", "et", machine_translated=True)
-lt_test_en = get_source_text("test", "lt", machine_translated=True)
-
-lv_train_en = get_source_text("train", "lv", machine_translated=True)
-ru_train_en = get_source_text("train", "ru", machine_translated=True)
-et_train_en = get_source_text("train", "et", machine_translated=True)
-lt_train_en = get_source_text("train", "lt", machine_translated=True)
-
-print(lv_test[0])
-print(lv_test_en[0])
-
-# # Definitions
-# ## Model and tokenizer
+            results.update({f"{key}_{lang}": get_source_text(dataset_type=key, source_language=lang)})
+            if lang != "en":
+                results.update({f"{key}_{lang}_en": get_source_text(dataset_type=key, source_language=lang,
+                                                                    machine_translated=True)})
+    return results
 
 
-# model_name = "bert-base-multilingual-cased"  # loading from huggingface
-model_name = PROJECT_ROOT_PATH / "bert-base-multilingual-cased"  # loading from local path
-
-tokenizer = BertTokenizer.from_pretrained(model_name)
-model_bert = TFBertModel.from_pretrained(model_name)
-
-
-# ## Labels
-
-
-# use keras.to_categorical() instead
-def encode_labels(answers: List) -> List:
-    """ Encode labels in one hot-encoding
-    'FindConnection' corresponds to [[1, 0]]
-    'DepartureTime' corresponds to [[0, 1]]
-    """
-    y = []
-    for answer in answers:
-        if answer == 'FindConnection':
-            y.append([[1, 0]])
-        else:
-            y.append([[0, 1]])
-    return y
-
-
-encoded_train_labels = encode_labels(train_answers)
-encoded_train_labels = tf.convert_to_tensor(encoded_train_labels)
-
-encoded_test_labels = encode_labels(test_answers)
-encoded_test_labels = tf.convert_to_tensor(encoded_test_labels)
-
-print(encoded_train_labels)
-
-
-def split_train_data(x, y, validation_size: int = 0.2):
+def split_train_data(x: list, y: list, validation_size: int = 0.2):
     """ Split training set in training and validation
     :param x: data
     :param y: labels
-    :param validation_size: what fraction of data to allocate to validation?
+    :param validation_size: what fraction of data to allocate to training?
     :return:
     """
     return train_test_split(x, y, test_size=validation_size, stratify=y, random_state=42)
 
 
-train_en, validation_en, train_labels, validation_labels = split_train_data(en_train, train_answers)
+def split_validation(datasets: dict, data: dict) -> dict:
+    """ Split training dataset in training and validation
+    :param datasets: dictionary with dataset type as key and list of languages as value
+    :param data: dictionary with test/train, language and labels as key and data as values
+    :return: updated data dictionary where each train key is split in train and validation
+    """
+    for key, value in datasets.items():
+        if key == "train":
+            for lang in value:
+                data[f"{key}_{lang}"], \
+                    data[f"{key}_{lang}_validation"], \
+                    data[f"{key}_{lang}_labels"], \
+                    data[f"{key}_{lang}_labels_validation"] = split_train_data(data[f"{key}_{lang}"],
+                                                                               data[f"{key}_labels"])
+                if lang != "en":
+                    data[f"{key}_{lang}_en"], \
+                        data[f"{key}_{lang}_en_validation"], \
+                        data[f"{key}_{lang}_en_labels"], \
+                        data[f"{key}_{lang}_en_labels_validation"] = split_train_data(data[f"{key}_{lang}_en"],
+                                                                                      data[f"{key}_labels"])
+    return data
 
-assert len(train_en) + len(validation_en) == len(en_train)
-assert len(train_labels) + len(validation_labels) == len(train_answers)
 
-# Count occurrences of labels in training dataset
-unique, counts = np.unique(np.array(train_labels), return_counts=True)
-dict(zip(unique, counts))
+def labels_to_categorical(data: dict) -> dict:
+    """ Convert string labels to categorical data
+    """
+    label_encoder = LabelEncoder()
+    for key in data.keys():
+        if "labels" in key:
+            # Encode string labels to integer labels
+            data[key] = label_encoder.fit_transform(data[key])
+            # Convert integer labels to categorical data
+            data[key] = to_categorical(data[key], num_classes=len(label_encoder.classes_))
+    return data
 
-# Count occurrences of labels in training dataset
-unique, counts = np.unique(np.array(validation_labels), return_counts=True)
-dict(zip(unique, counts))
 
+# Overview of the languages for each dataset type
+languages = ["en", "lv", "ru", "et", "lt"]
+datasets = {
+    "test": languages,
+    "train": languages
+}
+
+data = get_dataset(datasets)
+
+data = labels_to_categorical(data)
+
+data = split_validation(datasets, data)
+print(data)
 
 # ## Training
 
