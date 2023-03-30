@@ -23,17 +23,13 @@ def read_file(path: str) -> List[str]:
     """
     with open(path, encoding='utf-8') as f:
         array = []
-        for line in list(f):
-            array.append(line.split('\n')[0])
+        for line in f:
+            array.append(line.rstrip("\n"))
         return array
 
 
-def get_source_text(
-        dataset_type: str,
-        source_language: str = None,
-        labels: bool = False,
-        machine_translated: bool = False
-) -> List[str]:
+def get_source_text(dataset_type: str, source_language: str = None, labels: bool = False,
+                    machine_translated: bool = False) -> List[str]:
     """ Wrapper for read_file that provides file path.
     Prompts in all languages are in the same order, therefore they use the same label files. So please be careful
     to use the correct argument for labels, as label=True returns labels regardless of specified source_language
@@ -68,14 +64,68 @@ def encode_labels(answers: List) -> List:
     return y
 
 
-def split_train_data(x, y, validation_size: int = 0.2):
+def get_dataset(datasets: dict, need_labels: bool = True) -> dict:
+    """
+    :param datasets:
+    :param need_labels: redundant argument, i'm gonna remove it later
+    :return: dictionary with dataset type, language and optional labels and '_en' as keys and list of input data as values
+    """
+    results = dict()
+    for key, value in datasets.items():
+        if need_labels:
+            results.update({f"{key}_labels": get_source_text(dataset_type=key, labels=True)})
+        for lang in value:
+            results.update({f"{key}_{lang}": get_source_text(dataset_type=key, source_language=lang)})
+            if lang != "en":
+                results.update({f"{key}_{lang}_en": get_source_text(dataset_type=key, source_language=lang,
+                                                                    machine_translated=True)})
+    return results
+
+
+def split_train_data(x: list, y: list, validation_size: int = 0.2):
     """ Split training set in training and validation
     :param x: data
     :param y: labels
-    :param validation_size: what fraction of data to allocate to validation?
+    :param validation_size: what fraction of data to allocate to training?
     :return:
     """
     return train_test_split(x, y, test_size=validation_size, stratify=y, random_state=42)
+
+
+def split_validation(datasets: dict, data: dict) -> dict:
+    """ Split training dataset in training and validation
+    :param datasets: dictionary with dataset type as key and list of languages as value
+    :param data: dictionary with test/train, language and labels as key and data as values
+    :return: updated data dictionary where each train key is split in train and validation
+    """
+    for key, value in datasets.items():
+        if key == "train":
+            for lang in value:
+                data[f"{key}_{lang}"], \
+                    data[f"{key}_{lang}_validation"], \
+                    data[f"{key}_{lang}_labels"], \
+                    data[f"{key}_{lang}_labels_validation"] = split_train_data(data[f"{key}_{lang}"],
+                                                                               data[f"{key}_labels"])
+                if lang != "en":
+                    data[f"{key}_{lang}_en"], \
+                        data[f"{key}_{lang}_en_validation"], \
+                        data[f"{key}_{lang}_en_labels"], \
+                        data[f"{key}_{lang}_en_labels_validation"] = split_train_data(data[f"{key}_{lang}_en"],
+                                                                                      data[f"{key}_labels"])
+    return data
+
+
+def labels_to_categorical(data: dict) -> dict:
+    """ Convert string labels to categorical data
+    """
+    label_encoder = LabelEncoder()
+    for key in data.keys():
+        if "labels" in key:
+            # Encode string labels to integer labels
+            data[key] = label_encoder.fit_transform(data[key])
+            # Convert integer labels to categorical data
+            data[key] = to_categorical(data[key], num_classes=len(label_encoder.classes_))
+    return data
 
 
 def create_model_one_layer(sentence_length: int, units: int = 2, hidden_size: int = 768):
@@ -130,8 +180,8 @@ def get_word_embeddings(data: list, sentence_length: int):
     return model_bert(encoded_input)["last_hidden_state"]
 
 
-def training(train_dataset, train_answers, dataset_name: str, learning_rate: int, sentence_length: int, batch_size: int, epochs: int):
-
+def training(train_dataset, train_answers, dataset_name: str, learning_rate: int, sentence_length: int, batch_size: int,
+             epochs: int):
     # Split training dataset in training data and validation data
     train_data, validation_data, train_labels, validation_labels = split_train_data(train_dataset, train_answers)
 
@@ -150,9 +200,12 @@ def training(train_dataset, train_answers, dataset_name: str, learning_rate: int
     train_labels_categorical = to_categorical(train_labels_encoded, num_classes=num_classes)
     validation_labels_categorical = to_categorical(validation_labels_encoded, num_classes=num_classes)
 
-    print(f"train_data.shape {train_data.shape}")  # should print (num_samples, sentence_length, hidden_size) (80, 20, 768)
-    print(f"train_labels_categorical.shape {train_labels_categorical.shape}")  # should print (num_samples, num_classes) (80, 2)
-    print(f"validation_labels_categorical.shape {validation_labels_categorical.shape}")  # should print (num_samples, num_classes) (20, 2)
+    print(
+        f"train_data.shape {train_data.shape}")  # should print (num_samples, sentence_length, hidden_size) (80, 20, 768)
+    print(
+        f"train_labels_categorical.shape {train_labels_categorical.shape}")  # should print (num_samples, num_classes) (80, 2)
+    print(
+        f"validation_labels_categorical.shape {validation_labels_categorical.shape}")  # should print (num_samples, num_classes) (20, 2)
 
     classification_model = get_classification_model(learning_rate, sentence_length)
 
