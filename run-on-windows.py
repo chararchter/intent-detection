@@ -1,13 +1,4 @@
-import matplotlib.pyplot as plt
-import pandas as pd
-import tensorflow as tf
-from keras import Sequential
-from keras.layers import Dense, Dropout
-from keras.utils import to_categorical
-from sklearn.preprocessing import LabelEncoder
-from transformers import Conv1D
-
-from model import tokenizer, model_bert, get_dataset, labels_to_categorical, split_validation, training
+from model import get_dataset, labels_to_categorical, split_validation, training
 
 # Overview of the languages for each dataset type
 languages = ["en", "lv", "ru", "et", "lt"]
@@ -21,28 +12,20 @@ data = get_dataset(datasets)
 data = labels_to_categorical(data)
 
 data = split_validation(datasets, data)
-print(data)
-
-
 
 # ## Hyperparameters
-
 
 batch_size = 25
 sentence_length = 20
 learning_rate = 0.0003
-number_of_epochs = 100
-
-
-#
+epochs = 100
 
 # ## Each language has its own model
 # ### Using the original NLU-datasets
 # #### Train
 
-
-classification_model_en = training(en_train, dataset_name="en_train", learning_rate=learning_rate,
-                                   sentence_length=sentence_length)
+classification_model_en = training(data, key="train", lang="en", dataset_name="en_train", learning_rate=learning_rate,
+                                   sentence_length=sentence_length, batch_size=batch_size, epochs=epochs)
 
 classification_model_lv = training(lv_train, dataset_name="lv_train", learning_rate=learning_rate,
                                    sentence_length=sentence_length, labels=encoded_train_labels)

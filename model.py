@@ -180,41 +180,35 @@ def get_word_embeddings(data: list, sentence_length: int):
     return model_bert(encoded_input)["last_hidden_state"]
 
 
-def training(train_dataset, train_answers, dataset_name: str, learning_rate: int, sentence_length: int, batch_size: int,
-             epochs: int):
-    # Split training dataset in training data and validation data
-    train_data, validation_data, train_labels, validation_labels = split_train_data(train_dataset, train_answers)
+def training(data, key: str, lang: str, dataset_name: str, learning_rate: int, sentence_length: int, batch_size: int,
+             epochs: int, machine_translated: bool = False):
 
-    # Convert data to embeddings
+    if machine_translated:
+        identifier = "_en"
+    else:
+        identifier = ""
+
+    train_data = data[f"{key}_{lang}{identifier}"]
+    train_labels = data[f"{key}_{lang}{identifier}_labels"]
+    validation_data = data[f"{key}_{lang}{identifier}_validation"]
+    validation_labels = data[f"{key}_{lang}{identifier}_labels_validation"]
+
     train_data = get_word_embeddings(train_data, sentence_length)
     validation_data = get_word_embeddings(validation_data, sentence_length)
 
-    # Encode string labels to integers
-    label_encoder = LabelEncoder()
-    train_labels_encoded = label_encoder.fit_transform(train_labels)
-    validation_labels_encoded = label_encoder.transform(validation_labels)
-
-    # Convert integer labels to categorical data
-    num_classes = len(label_encoder.classes_)
-    print(f"num_classes {num_classes}")  # 2
-    train_labels_categorical = to_categorical(train_labels_encoded, num_classes=num_classes)
-    validation_labels_categorical = to_categorical(validation_labels_encoded, num_classes=num_classes)
-
-    print(
-        f"train_data.shape {train_data.shape}")  # should print (num_samples, sentence_length, hidden_size) (80, 20, 768)
-    print(
-        f"train_labels_categorical.shape {train_labels_categorical.shape}")  # should print (num_samples, num_classes) (80, 2)
-    print(
-        f"validation_labels_categorical.shape {validation_labels_categorical.shape}")  # should print (num_samples, num_classes) (20, 2)
+    print(f"train_data.shape {train_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
+    print(f"train_labels.shape {train_labels.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
+    print(f"train_labels.shape {train_labels.shape}")  # (num_samples, num_classes) (80, 2)
+    print(f"validation_labels.shape {validation_labels.shape}")  # (num_samples, num_classes) (20, 2)
 
     classification_model = get_classification_model(learning_rate, sentence_length)
 
     history = classification_model.fit(
         train_data,
-        y=train_labels_categorical,
+        y=train_labels,
         batch_size=batch_size,
         epochs=epochs,
-        validation_data=(validation_data, validation_labels_categorical)
+        validation_data=(validation_data, validation_labels)
     )
 
     plot_performance(history.history['accuracy'], dataset=dataset_name, x_label='accuracy')
