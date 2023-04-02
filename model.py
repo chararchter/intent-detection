@@ -180,9 +180,20 @@ def get_word_embeddings(data: list, sentence_length: int):
     return model_bert(encoded_input)["last_hidden_state"]
 
 
+def convert_to_embeddings(data: dict, sentence_length: int) -> dict:
+    """ Convert data to word embeddings
+    :param data: dictionary with test/train, language and labels as key and data as values
+    :return: updated data dictionary with sentences converted to word embeddings
+    """
+    for key, value in data.items():
+        if "labels" not in key:
+            print(key)
+            data[key] = get_word_embeddings(data[key], sentence_length)
+    return data
+
+
 def training(data, key: str, lang: str, dataset_name: str, learning_rate: int, sentence_length: int, batch_size: int,
              epochs: int, machine_translated: bool = False):
-
     if machine_translated:
         identifier = "_en"
     else:
@@ -192,9 +203,6 @@ def training(data, key: str, lang: str, dataset_name: str, learning_rate: int, s
     train_labels = data[f"{key}_{lang}{identifier}_labels"]
     validation_data = data[f"{key}_{lang}{identifier}_validation"]
     validation_labels = data[f"{key}_{lang}{identifier}_labels_validation"]
-
-    train_data = get_word_embeddings(train_data, sentence_length)
-    validation_data = get_word_embeddings(validation_data, sentence_length)
 
     print(f"train_data.shape {train_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
     print(f"train_labels.shape {train_labels.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
