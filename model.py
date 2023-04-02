@@ -187,7 +187,6 @@ def convert_to_embeddings(data: dict, sentence_length: int) -> dict:
     """
     for key, value in data.items():
         if "labels" not in key:
-            print(key)
             data[key] = get_word_embeddings(data[key], sentence_length)
     return data
 
@@ -205,7 +204,7 @@ def training(data, lang: str, learning_rate: int, sentence_length: int, batch_si
     validation_labels = data[f"train_{lang}{identifier}_labels_validation"]
 
     print(f"train_data.shape {train_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
-    print(f"train_labels.shape {train_labels.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
+    print(f"validation_data.shape {validation_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
     print(f"train_labels.shape {train_labels.shape}")  # (num_samples, num_classes) (80, 2)
     print(f"validation_labels.shape {validation_labels.shape}")  # (num_samples, num_classes) (20, 2)
 

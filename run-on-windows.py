@@ -5,7 +5,7 @@ from model import get_dataset, labels_to_categorical, split_validation, training
 batch_size = 25
 sentence_length = 20
 learning_rate = 0.0003
-epochs = 100
+epochs = 20
 
 # Overview of the languages for each dataset type
 languages = ["en", "lv", "ru", "et", "lt"]
@@ -21,39 +21,34 @@ data = labels_to_categorical(data)
 data = split_validation(datasets, data)
 
 data = convert_to_embeddings(data, sentence_length)
-print(data)
+print(data.keys())
 
 # ## Each language has its own model
 # ### Using the original NLU-datasets
 # #### Train
 
-classification_model_en = training(data, lang="en", learning_rate=learning_rate, sentence_length=sentence_length,
-                                   batch_size=batch_size, epochs=epochs)
+classification_en = training(data, "en", learning_rate, sentence_length, batch_size, epochs)
 
-classification_model_lv = training(lv_train, dataset_name="lv_train", learning_rate=learning_rate,
-                                   sentence_length=sentence_length, labels=encoded_train_labels)
+classification_lv = training(data, "lv", learning_rate, sentence_length, batch_size, epochs)
 
-classification_model_ru = training(ru_train, dataset_name="ru_train", learning_rate=learning_rate,
-                                   sentence_length=sentence_length, labels=encoded_train_labels)
+classification_ru = training(data, "ru", learning_rate, sentence_length, batch_size, epochs)
 
-classification_model_et = training(et_train, dataset_name="et_train", learning_rate=learning_rate,
-                                   sentence_length=sentence_length, labels=encoded_train_labels)
+classification_et = training(data, "et", learning_rate, sentence_length, batch_size, epochs)
 
-classification_model_lt = training(lt_train, dataset_name="lt_train", learning_rate=learning_rate,
-                                   sentence_length=sentence_length, labels=encoded_train_labels)
+classification_lt = training(data, "lt", learning_rate, sentence_length, batch_size, epochs)
 
-# #### Test
+#### Test
 
 
-accuracy_en = test_classification_model(classification_model_en, en_test, encoded_test_labels)
+accuracy_en = test_classification_model(classification_en, en_test, encoded_test_labels)
 
-accuracy_lv = test_classification_model(classification_model_lv, lv_test, encoded_test_labels)
+accuracy_lv = test_classification_model(classification_lv, lv_test, encoded_test_labels)
 
-accuracy_ru = test_classification_model(classification_model_ru, ru_test, encoded_test_labels)
+accuracy_ru = test_classification_model(classification_ru, ru_test, encoded_test_labels)
 
-accuracy_et = test_classification_model(classification_model_et, et_test, encoded_test_labels)
+accuracy_et = test_classification_model(classification_et, et_test, encoded_test_labels)
 
-accuracy_lt = test_classification_model(classification_model_lt, lt_test, encoded_test_labels)
+accuracy_lt = test_classification_model(classification_lt, lt_test, encoded_test_labels)
 
 df = pd.DataFrame()
 
