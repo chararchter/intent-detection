@@ -129,19 +129,19 @@ def labels_to_categorical(data: dict) -> dict:
 
 
 def create_model_one_layer(sentence_length: int, units: int = 2, hidden_size: int = 768):
-    """
-    returns <tf.Tensor: shape=(1, 1, units), dtype=float32>
-    e.g. <tf.Tensor: shape=(1, 1, 2), dtype=float32>
-    where 2 = units
-    """
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
     model.add(Dense(units, activation='softmax'))
+    print(model.summary())
     model.add(Conv1D(units, sentence_length, padding="valid", activation="softmax"))
-    # model.add(MaxPooling1D(pool_size=2)) # enable this layer
-    model.add(Dropout(0.1))  # make smaller dropout
-    # model.add(Dense(units, activation='softmax'))
-    model.add(Dense(1, activation='sigmoid'))
+    print(model.summary())
+    # model.add(MaxPooling1D(pool_size=2))
+    # print(model.summary())
+    model.add(Dropout(0.05))  # make smaller dropout
+    print(model.summary())
+    model.add(Dense(units, activation='softmax'))
+    model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1))) # squeeze the output to remove dimension with size 1
+    print(model.summary())
     return model
 
 
@@ -157,7 +157,7 @@ def get_classification_model(learning_rate: int, sentence_length: int):
 
     classification_model.compile(
         optimizer=optimizer,
-        loss='binary_crossentropy',
+        loss='categorical_crossentropy',
         metrics=['accuracy']
     )
     return classification_model

@@ -1,11 +1,12 @@
-from model import get_dataset, labels_to_categorical, split_validation, training, convert_to_embeddings
+from model import get_dataset, labels_to_categorical, split_validation, training, convert_to_embeddings, \
+    test_classification_model
 
 # ## Hyperparameters
 
 batch_size = 25
 sentence_length = 20
-learning_rate = 0.0003
-epochs = 20
+learning_rate = 0.003
+epochs = 100
 
 # Overview of the languages for each dataset type
 languages = ["en", "lv", "ru", "et", "lt"]
@@ -21,7 +22,6 @@ data = labels_to_categorical(data)
 data = split_validation(datasets, data)
 
 data = convert_to_embeddings(data, sentence_length)
-print(data.keys())
 
 # ## Each language has its own model
 # ### Using the original NLU-datasets
