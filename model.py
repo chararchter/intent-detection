@@ -2,7 +2,7 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from keras.layers import Dense, Conv1D, Dropout
+from keras.layers import Dense, Conv1D, Dropout, MaxPooling1D, Flatten
 from keras.models import Sequential
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
@@ -163,15 +163,16 @@ def get_classification_model(learning_rate: int, sentence_length: int):
     return classification_model
 
 
-def plot_performance(data, dataset: str, x_label: str = 'accuracy'):
-    plt.plot(data)
+def plot_performance(training_data, validation_data, dataset: str, x_label: str = 'accuracy'):
+    plt.plot(training_data, label='training')
+    plt.plot(validation_data, label='validation')
     ax = plt.gca()
     ax.set_xlabel('epochs')
     ax.set_ylabel(x_label)
     plt.title(f"{dataset} model {x_label}")
+    plt.legend(loc="center")
     plt.savefig(f"graphs/{dataset}-{x_label}.png")
-    # plt.savefig(f"{dataset}{x_label}.pdf", dpi=150) # pdf for LaTeX
-    # plt.show()
+    plt.show()
 
 
 def get_word_embeddings(data: list, sentence_length: int):
@@ -218,8 +219,19 @@ def training(data, lang: str, learning_rate: int, sentence_length: int, batch_si
         validation_data=(validation_data, validation_labels)
     )
 
-    plot_performance(history.history['accuracy'], dataset=f"train_{lang}{identifier}", x_label='accuracy')
-    plot_performance(history.history['loss'], dataset=f"train_{lang}{identifier}", x_label='loss')
+    plot_performance(
+        history.history['accuracy'],
+        history.history['val_accuracy'],
+        dataset=f"train_{lang}{identifier}",
+        x_label='accuracy'
+    )
+
+    plot_performance(
+        history.history['loss'],
+        history.history['val_loss'],
+        dataset=f"train_{lang}{identifier}",
+        x_label='loss'
+    )
 
     return classification_model
 
