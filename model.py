@@ -192,17 +192,17 @@ def convert_to_embeddings(data: dict, sentence_length: int) -> dict:
     return data
 
 
-def training(data, key: str, lang: str, dataset_name: str, learning_rate: int, sentence_length: int, batch_size: int,
-             epochs: int, machine_translated: bool = False):
+def training(data, lang: str, learning_rate: int, sentence_length: int, batch_size: int, epochs: int,
+             machine_translated: bool = False):
     if machine_translated:
         identifier = "_en"
     else:
         identifier = ""
 
-    train_data = data[f"{key}_{lang}{identifier}"]
-    train_labels = data[f"{key}_{lang}{identifier}_labels"]
-    validation_data = data[f"{key}_{lang}{identifier}_validation"]
-    validation_labels = data[f"{key}_{lang}{identifier}_labels_validation"]
+    train_data = data[f"train_{lang}{identifier}"]
+    train_labels = data[f"train_{lang}{identifier}_labels"]
+    validation_data = data[f"train_{lang}{identifier}_validation"]
+    validation_labels = data[f"train_{lang}{identifier}_labels_validation"]
 
     print(f"train_data.shape {train_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
     print(f"train_labels.shape {train_labels.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
@@ -219,8 +219,8 @@ def training(data, key: str, lang: str, dataset_name: str, learning_rate: int, s
         validation_data=(validation_data, validation_labels)
     )
 
-    plot_performance(history.history['accuracy'], dataset=dataset_name, x_label='accuracy')
-    plot_performance(history.history['loss'], dataset=dataset_name, x_label='loss')
+    plot_performance(history.history['accuracy'], dataset=f"train_{lang}{identifier}", x_label='accuracy')
+    plot_performance(history.history['loss'], dataset=f"train_{lang}{identifier}", x_label='loss')
 
     return classification_model
 

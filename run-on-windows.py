@@ -27,8 +27,8 @@ print(data)
 # ### Using the original NLU-datasets
 # #### Train
 
-classification_model_en = training(data, key="train", lang="en", dataset_name="en_train", learning_rate=learning_rate,
-                                   sentence_length=sentence_length, batch_size=batch_size, epochs=epochs)
+classification_model_en = training(data, lang="en", learning_rate=learning_rate, sentence_length=sentence_length,
+                                   batch_size=batch_size, epochs=epochs)
 
 classification_model_lv = training(lv_train, dataset_name="lv_train", learning_rate=learning_rate,
                                    sentence_length=sentence_length, labels=encoded_train_labels)
