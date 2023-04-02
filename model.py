@@ -192,12 +192,17 @@ def convert_to_embeddings(data: dict, sentence_length: int) -> dict:
     return data
 
 
+def get_identifier(machine_translated: bool = False) -> str:
+    if machine_translated:
+        return "_en"
+    else:
+        return ""
+
+
 def training(data, lang: str, learning_rate: int, sentence_length: int, batch_size: int, epochs: int,
              machine_translated: bool = False):
-    if machine_translated:
-        identifier = "_en"
-    else:
-        identifier = ""
+
+    identifier = get_identifier(machine_translated)
 
     train_data = data[f"train_{lang}{identifier}"]
     train_labels = data[f"train_{lang}{identifier}_labels"]
@@ -236,18 +241,12 @@ def training(data, lang: str, learning_rate: int, sentence_length: int, batch_si
     return classification_model
 
 
-def test_classification_model(classification_model, dataset, encoded_test_labels, batch_size, sentence_length) -> float:
-    encoded_input = tokenizer(
-        dataset,
-        padding='max_length',
-        max_length=sentence_length,
-        truncation=True,
-        return_tensors='tf'
-    )
-    classification_input = model_bert(encoded_input)["last_hidden_state"]
+def test_classification_model(model, data: dict, lang: str, batch_size: int) -> float:
 
-    test_loss, test_accuracy = classification_model.evaluate(classification_input, encoded_test_labels,
-                                                             batch_size=batch_size)
+    test_data = data[f"train_{lang}"]
+    test_labels = data[f"train_{lang}_labels"]
+
+    test_loss, test_accuracy = model.evaluate(test_data, test_labels, batch_size=batch_size)
     print('Test Loss: {:.2f}'.format(test_loss))
     print('Test Accuracy: {:.2f}'.format(test_accuracy))
     return test_accuracy

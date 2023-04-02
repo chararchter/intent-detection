@@ -22,6 +22,7 @@ data = labels_to_categorical(data)
 data = split_validation(datasets, data)
 
 data = convert_to_embeddings(data, sentence_length)
+print(data)
 
 # ## Each language has its own model
 # ### Using the original NLU-datasets
@@ -40,7 +41,7 @@ classification_lt = training(data, "lt", learning_rate, sentence_length, batch_s
 #### Test
 
 
-accuracy_en = test_classification_model(classification_en, en_test, encoded_test_labels)
+accuracy_en = test_classification_model(classification_en, data, "en", batch_size)
 
 accuracy_lv = test_classification_model(classification_lv, lv_test, encoded_test_labels)
 
