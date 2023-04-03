@@ -1,3 +1,5 @@
+import pandas as pd
+
 from model import get_dataset, labels_to_categorical, split_validation, training, convert_to_embeddings, \
     test_classification_model
 
@@ -43,45 +45,42 @@ classification_lt = training(data, "lt", learning_rate, sentence_length, batch_s
 
 accuracy_en = test_classification_model(classification_en, data, "en", batch_size)
 
-accuracy_lv = test_classification_model(classification_lv, lv_test, encoded_test_labels)
+accuracy_lv = test_classification_model(classification_lv, data, "lv", batch_size)
 
-accuracy_ru = test_classification_model(classification_ru, ru_test, encoded_test_labels)
+accuracy_ru = test_classification_model(classification_ru, data, "ru", batch_size)
 
-accuracy_et = test_classification_model(classification_et, et_test, encoded_test_labels)
+accuracy_et = test_classification_model(classification_et, data, "et", batch_size)
 
-accuracy_lt = test_classification_model(classification_lt, lt_test, encoded_test_labels)
+accuracy_lt = test_classification_model(classification_lt, data, "lt", batch_size)
 
 df = pd.DataFrame()
 
+df['hyperparameters'] = [batch_size, sentence_length, learning_rate, epochs, None]
+
 df['1_method'] = [accuracy_en, accuracy_lv, accuracy_ru, accuracy_et, accuracy_lt]
-print(df)
+# print(df)
 
-### Using machine translated non-English datasets
-#### Train
+# ### Using machine translated non-English datasets
+# #### Train
 
 
-classification_model_lv_en = training(lv_train_en, dataset_name="lv_train_en", learning_rate=learning_rate,
-                                      sentence_length=sentence_length, labels=encoded_train_labels)
+classification_lv_en = training(data, "lv_en", learning_rate, sentence_length, batch_size, epochs)
 
-classification_model_ru_en = training(ru_train_en, dataset_name="ru_train_en", learning_rate=learning_rate,
-                                      sentence_length=sentence_length, labels=encoded_train_labels)
+classification_ru_en = training(data, "ru_en", learning_rate, sentence_length, batch_size, epochs)
 
-classification_model_et_en = training(et_train_en, dataset_name="et_train_en", learning_rate=learning_rate,
-                                      sentence_length=sentence_length, labels=encoded_train_labels)
+classification_et_en = training(data, "et_en", learning_rate, sentence_length, batch_size, epochs)
 
-classification_model_lt_en = training(lt_train_en, dataset_name="lt_train_en", learning_rate=learning_rate,
-                                      sentence_length=sentence_length, labels=encoded_train_labels)
+classification_lt_en = training(data, "lt_en", learning_rate, sentence_length, batch_size, epochs)
 
 # #### Test
 
+accuracy_lv = test_classification_model(classification_lv_en, data, "lv_en", batch_size)
 
-accuracy_lv = test_classification_model(classification_model_lv_en, lv_test_en, encoded_test_labels)
+accuracy_ru = test_classification_model(classification_ru_en, data, "ru_en", batch_size)
 
-accuracy_ru = test_classification_model(classification_model_ru_en, ru_test_en, encoded_test_labels)
+accuracy_et = test_classification_model(classification_et_en, data, "et_en", batch_size)
 
-accuracy_et = test_classification_model(classification_model_et_en, et_test_en, encoded_test_labels)
-
-accuracy_lt = test_classification_model(classification_model_lt_en, lt_test_en, encoded_test_labels)
+accuracy_lt = test_classification_model(classification_lt_en, data, "lt_en", batch_size)
 
 df['2_method'] = [None, accuracy_lv, accuracy_ru, accuracy_et, accuracy_lt]
 print(df)
@@ -162,19 +161,18 @@ print(df)
 # ## Trained only on English data
 
 
-classification_model_en = training(en_train, dataset_name="en_train", learning_rate=learning_rate,
-                                   sentence_length=sentence_length, labels=encoded_train_labels)
+classification_en = training(data, "en", learning_rate, sentence_length, batch_size, epochs)
 
 # ### Test on non-English data
 
 
-accuracy_lv = test_classification_model(classification_model_en, lv_test, encoded_test_labels)
+accuracy_lv = test_classification_model(classification_en, data, "lv", batch_size)
 
-accuracy_ru = test_classification_model(classification_model_en, ru_test, encoded_test_labels)
+accuracy_ru = test_classification_model(classification_en, data, "ru", batch_size)
 
-accuracy_et = test_classification_model(classification_model_en, et_test, encoded_test_labels)
+accuracy_et = test_classification_model(classification_en, data, "et", batch_size)
 
-accuracy_lt = test_classification_model(classification_model_en, lt_test, encoded_test_labels)
+accuracy_lt = test_classification_model(classification_en, data, "lt", batch_size)
 
 df['5_method'] = [None, accuracy_lv, accuracy_ru, accuracy_et, accuracy_lt]
 print(df)
@@ -182,13 +180,13 @@ print(df)
 # ### Test on non-English machine translated to English data
 
 
-accuracy_lv = test_classification_model(classification_model_en, lv_test_en, encoded_test_labels)
+accuracy_lv = test_classification_model(classification_en, data, "lv_en", batch_size)
 
-accuracy_ru = test_classification_model(classification_model_en, ru_test_en, encoded_test_labels)
+accuracy_ru = test_classification_model(classification_en, data, "ru_en", batch_size)
 
-accuracy_et = test_classification_model(classification_model_en, et_test_en, encoded_test_labels)
+accuracy_et = test_classification_model(classification_en, data, "et_en", batch_size)
 
-accuracy_lt = test_classification_model(classification_model_en, lt_test_en, encoded_test_labels)
+accuracy_lt = test_classification_model(classification_en, data, "lt_en", batch_size)
 
 df['6_method'] = [None, accuracy_lv, accuracy_ru, accuracy_et, accuracy_lt]
 print(df)
