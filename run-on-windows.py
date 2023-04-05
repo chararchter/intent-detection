@@ -1,4 +1,5 @@
 import pandas as pd
+import tensorflow as tf
 
 from model import get_dataset, labels_to_categorical, split_validation, training, convert_to_embeddings, \
     test_classification_model
@@ -25,6 +26,7 @@ data = split_validation(datasets, data)
 
 data = convert_to_embeddings(data, sentence_length)
 print(data)
+print(data.keys())
 
 # ## Each language has its own model
 # ### Using the original NLU-datasets
@@ -86,49 +88,43 @@ df['2_method'] = [None, accuracy_lv, accuracy_ru, accuracy_et, accuracy_lt]
 print(df)
 
 # ## One model trained on all languages
-
-
-# one big train label dataset
-all_train_labels = []
-
-for i in range(5):
-    all_train_labels.extend(train_answers)
-
-# one big test label dataset
-all_test_labels = []
-
-for i in range(5):
-    all_test_labels.extend(test_answers)
-
-all_train_labels = encode_labels(all_train_labels)
-all_train_labels = tf.convert_to_tensor(all_train_labels)
-
-all_test_labels = encode_labels(all_test_labels)
-all_test_labels = tf.convert_to_tensor(all_test_labels)
-
 # ### Using the original NLU-datasets
 
+# One big training dataset
 
-# one big training dataset
-all_train = []
-all_train.extend(en_train)
-all_train.extend(lv_train)
-all_train.extend(ru_train)
-all_train.extend(et_train)
-all_train.extend(lt_train)
+train_all = tf.concat([data[key] for key in ['train_en', 'train_lv', 'train_ru', 'train_et', 'train_lt']], axis=0)
+train_all_labels = tf.concat(
+    [data[key] for key in
+    ['train_en_labels', 'train_lv_labels', 'train_ru_labels', 'train_et_labels', 'train_lt_labels']], axis=0
+)
+train_all_validation = tf.concat(
+    [data[key] for key in
+    ['train_en_validation', 'train_lv_validation', 'train_ru_validation', 'train_et_validation', 'train_lt_validation']
+    ], axis=0
+)
+train_all_labels_validation = tf.concat(
+    [data[key] for key in
+    ['train_en_labels_validation', 'train_lv_labels_validation',
+    'train_ru_labels_validation', 'train_et_labels_validation',
+    'train_lt_labels_validation']], axis=0
+)
 
-classification_model_all = training(all_train, dataset_name="all_train", learning_rate=learning_rate,
-                                    sentence_length=sentence_length, labels=all_train_labels)
+data.update({'train_all': train_all, 'train_all_labels': train_all_labels, 'train_all_validation': train_all_validation,
+             'train_all_labels_validation': train_all_labels_validation})
 
-accuracy_en = test_classification_model(classification_model_all, en_test, encoded_test_labels)
+print(data)
 
-accuracy_lv = test_classification_model(classification_model_all, lv_test, encoded_test_labels)
+classification_all = training(data, "all", learning_rate, sentence_length, batch_size, epochs)
 
-accuracy_ru = test_classification_model(classification_model_all, ru_test, encoded_test_labels)
+accuracy_en = test_classification_model(classification_all, data, "all_en", batch_size)
 
-accuracy_et = test_classification_model(classification_model_all, et_test, encoded_test_labels)
+accuracy_lv = test_classification_model(classification_all, data, "all_lv", batch_size)
 
-accuracy_lt = test_classification_model(classification_model_all, lt_test, encoded_test_labels)
+accuracy_ru = test_classification_model(classification_all, data, "all_ru", batch_size)
+
+accuracy_et = test_classification_model(classification_all, data, "all_et", batch_size)
+
+accuracy_lt = test_classification_model(classification_all, data, "all_lt", batch_size)
 
 df['3_method'] = [accuracy_en, accuracy_lv, accuracy_ru, accuracy_et, accuracy_lt]
 print(df)
