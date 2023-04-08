@@ -151,7 +151,7 @@ def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, ep
                                     weight_decay=weight_decay)
 
 
-def get_classification_model(learning_rate: int, sentence_length: int):
+def get_classification_model(learning_rate: float, sentence_length: int):
     optimizer = create_adam_optimizer(lr=learning_rate)
     classification_model = create_model_one_layer(sentence_length=sentence_length)
 
@@ -199,7 +199,7 @@ def get_identifier(machine_translated: bool = False) -> str:
         return ""
 
 
-def training(data, lang: str, learning_rate: int, sentence_length: int, batch_size: int, epochs: int,
+def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int,
              machine_translated: bool = False):
 
     identifier = get_identifier(machine_translated)
