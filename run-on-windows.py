@@ -11,6 +11,10 @@ sentence_length = 20
 learning_rate = 0.003
 epochs = 100
 
+df = pd.DataFrame()
+
+df['hyperparameters'] = [batch_size, sentence_length, learning_rate, epochs, None]
+
 # Overview of the languages for each dataset type
 languages = ["en", "lv", "ru", "et", "lt"]
 datasets = {
@@ -54,10 +58,6 @@ accuracy_ru = test_classification_model(classification_ru, data, "ru", batch_siz
 accuracy_et = test_classification_model(classification_et, data, "et", batch_size)
 
 accuracy_lt = test_classification_model(classification_lt, data, "lt", batch_size)
-
-df = pd.DataFrame()
-
-df['hyperparameters'] = [batch_size, sentence_length, learning_rate, epochs, None]
 
 df['1_method'] = [accuracy_en, accuracy_lv, accuracy_ru, accuracy_et, accuracy_lt]
 # print(df)
