@@ -2,7 +2,7 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from keras.layers import Dense, Conv1D, Dropout
+from keras.layers import Dense, Conv1D, Dropout, MaxPooling1D, Flatten
 from keras.models import Sequential
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
@@ -23,17 +23,13 @@ def read_file(path: str) -> List[str]:
     """
     with open(path, encoding='utf-8') as f:
         array = []
-        for line in list(f):
-            array.append(line.split('\n')[0])
+        for line in f:
+            array.append(line.rstrip("\n"))
         return array
 
 
-def get_source_text(
-        dataset_type: str,
-        source_language: str = None,
-        labels: bool = False,
-        machine_translated: bool = False
-) -> List[str]:
+def get_source_text(dataset_type: str, source_language: str = None, labels: bool = False,
+                    machine_translated: bool = False) -> List[str]:
     """ Wrapper for read_file that provides file path.
     Prompts in all languages are in the same order, therefore they use the same label files. So please be careful
     to use the correct argument for labels, as label=True returns labels regardless of specified source_language
@@ -68,30 +64,84 @@ def encode_labels(answers: List) -> List:
     return y
 
 
-def split_train_data(x, y, validation_size: int = 0.2):
+def get_dataset(datasets: dict, need_labels: bool = True) -> dict:
+    """
+    :param datasets:
+    :param need_labels: redundant argument, i'm gonna remove it later
+    :return: dictionary with dataset type, language and optional labels and '_en' as keys and list of input data as values
+    """
+    results = dict()
+    for key, value in datasets.items():
+        if need_labels:
+            results.update({f"{key}_labels": get_source_text(dataset_type=key, labels=True)})
+        for lang in value:
+            results.update({f"{key}_{lang}": get_source_text(dataset_type=key, source_language=lang)})
+            if lang != "en":
+                results.update({f"{key}_{lang}_en": get_source_text(dataset_type=key, source_language=lang,
+                                                                    machine_translated=True)})
+    return results
+
+
+def split_train_data(x: list, y: list, validation_size: int = 0.2):
     """ Split training set in training and validation
     :param x: data
     :param y: labels
-    :param validation_size: what fraction of data to allocate to validation?
+    :param validation_size: what fraction of data to allocate to training?
     :return:
     """
     return train_test_split(x, y, test_size=validation_size, stratify=y, random_state=42)
 
 
+def split_validation(datasets: dict, data: dict) -> dict:
+    """ Split training dataset in training and validation
+    :param datasets: dictionary with dataset type as key and list of languages as value
+    :param data: dictionary with test/train, language and labels as key and data as values
+    :return: updated data dictionary where each train key is split in train and validation
+    """
+    for key, value in datasets.items():
+        if key == "train":
+            for lang in value:
+                data[f"{key}_{lang}"], \
+                    data[f"{key}_{lang}_validation"], \
+                    data[f"{key}_{lang}_labels"], \
+                    data[f"{key}_{lang}_labels_validation"] = split_train_data(data[f"{key}_{lang}"],
+                                                                               data[f"{key}_labels"])
+                if lang != "en":
+                    data[f"{key}_{lang}_en"], \
+                        data[f"{key}_{lang}_en_validation"], \
+                        data[f"{key}_{lang}_en_labels"], \
+                        data[f"{key}_{lang}_en_labels_validation"] = split_train_data(data[f"{key}_{lang}_en"],
+                                                                                      data[f"{key}_labels"])
+    return data
+
+
+def labels_to_categorical(data: dict) -> dict:
+    """ Convert string labels to categorical data
+    """
+    label_encoder = LabelEncoder()
+    for key in data.keys():
+        if "labels" in key:
+            # Encode string labels to integer labels
+            data[key] = label_encoder.fit_transform(data[key])
+            # Convert integer labels to categorical data
+            data[key] = to_categorical(data[key], num_classes=len(label_encoder.classes_))
+    return data
+
+
 def create_model_one_layer(sentence_length: int, units: int = 2, hidden_size: int = 768):
-    """
-    returns <tf.Tensor: shape=(1, 1, units), dtype=float32>
-    e.g. <tf.Tensor: shape=(1, 1, 2), dtype=float32>
-    where 2 = units
-    """
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
     model.add(Dense(units, activation='softmax'))
+    print(model.summary())
     model.add(Conv1D(units, sentence_length, padding="valid", activation="softmax"))
-    # model.add(MaxPooling1D(pool_size=2)) # enable this layer
-    model.add(Dropout(0.1))  # make smaller dropout
-    # model.add(Dense(units, activation='softmax'))
-    model.add(Dense(1, activation='sigmoid'))
+    print(model.summary())
+    # model.add(MaxPooling1D(pool_size=2))
+    # print(model.summary())
+    model.add(Dropout(0.05))  # make smaller dropout
+    print(model.summary())
+    model.add(Dense(units, activation='softmax'))
+    model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1))) # squeeze the output to remove dimension with size 1
+    print(model.summary())
     return model
 
 
@@ -101,27 +151,28 @@ def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, ep
                                     weight_decay=weight_decay)
 
 
-def get_classification_model(learning_rate: int, sentence_length: int):
+def get_classification_model(learning_rate: float, sentence_length: int):
     optimizer = create_adam_optimizer(lr=learning_rate)
     classification_model = create_model_one_layer(sentence_length=sentence_length)
 
     classification_model.compile(
         optimizer=optimizer,
-        loss='binary_crossentropy',
+        loss='categorical_crossentropy',
         metrics=['accuracy']
     )
     return classification_model
 
 
-def plot_performance(data, dataset: str, x_label: str = 'accuracy'):
-    plt.plot(data)
+def plot_performance(training_data, validation_data, dataset: str, x_label: str = 'accuracy'):
+    plt.plot(training_data, label='training')
+    plt.plot(validation_data, label='validation')
     ax = plt.gca()
     ax.set_xlabel('epochs')
     ax.set_ylabel(x_label)
     plt.title(f"{dataset} model {x_label}")
+    plt.legend(loc="center")
     plt.savefig(f"graphs/{dataset}-{x_label}.png")
-    # plt.savefig(f"{dataset}{x_label}.pdf", dpi=150) # pdf for LaTeX
-    # plt.show()
+    plt.show()
 
 
 def get_word_embeddings(data: list, sentence_length: int):
@@ -130,58 +181,74 @@ def get_word_embeddings(data: list, sentence_length: int):
     return model_bert(encoded_input)["last_hidden_state"]
 
 
-def training(train_dataset, train_answers, dataset_name: str, learning_rate: int, sentence_length: int, batch_size: int, epochs: int):
+def convert_to_embeddings(data: dict, sentence_length: int) -> dict:
+    """ Convert data to word embeddings
+    :param data: dictionary with test/train, language and labels as key and data as values
+    :return: updated data dictionary with sentences converted to word embeddings
+    """
+    for key, value in data.items():
+        if "labels" not in key:
+            data[key] = get_word_embeddings(data[key], sentence_length)
+    return data
 
-    # Split training dataset in training data and validation data
-    train_data, validation_data, train_labels, validation_labels = split_train_data(train_dataset, train_answers)
 
-    # Convert data to embeddings
-    train_data = get_word_embeddings(train_data, sentence_length)
-    validation_data = get_word_embeddings(validation_data, sentence_length)
+def get_identifier(machine_translated: bool = False) -> str:
+    if machine_translated:
+        return "_en"
+    else:
+        return ""
 
-    # Encode string labels to integers
-    label_encoder = LabelEncoder()
-    train_labels_encoded = label_encoder.fit_transform(train_labels)
-    validation_labels_encoded = label_encoder.transform(validation_labels)
 
-    # Convert integer labels to categorical data
-    num_classes = len(label_encoder.classes_)
-    print(f"num_classes {num_classes}")  # 2
-    train_labels_categorical = to_categorical(train_labels_encoded, num_classes=num_classes)
-    validation_labels_categorical = to_categorical(validation_labels_encoded, num_classes=num_classes)
+def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int,
+             machine_translated: bool = False):
 
-    print(f"train_data.shape {train_data.shape}")  # should print (num_samples, sentence_length, hidden_size) (80, 20, 768)
-    print(f"train_labels_categorical.shape {train_labels_categorical.shape}")  # should print (num_samples, num_classes) (80, 2)
-    print(f"validation_labels_categorical.shape {validation_labels_categorical.shape}")  # should print (num_samples, num_classes) (20, 2)
+    identifier = get_identifier(machine_translated)
+
+    train_data = data[f"train_{lang}{identifier}"]
+    # TODO: stack attributes in different levels: test/train, language and machine translated yes/no
+    # t = data["train"][lang][[identifier]]
+    train_labels = data[f"train_{lang}{identifier}_labels"]
+    validation_data = data[f"train_{lang}{identifier}_validation"]
+    validation_labels = data[f"train_{lang}{identifier}_labels_validation"]
+
+    print(f"train_data.shape {train_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
+    print(f"validation_data.shape {validation_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
+    print(f"train_labels.shape {train_labels.shape}")  # (num_samples, num_classes) (80, 2)
+    print(f"validation_labels.shape {validation_labels.shape}")  # (num_samples, num_classes) (20, 2)
 
     classification_model = get_classification_model(learning_rate, sentence_length)
 
     history = classification_model.fit(
         train_data,
-        y=train_labels_categorical,
+        y=train_labels,
         batch_size=batch_size,
         epochs=epochs,
-        validation_data=(validation_data, validation_labels_categorical)
+        validation_data=(validation_data, validation_labels)
     )
 
-    plot_performance(history.history['accuracy'], dataset=dataset_name, x_label='accuracy')
-    plot_performance(history.history['loss'], dataset=dataset_name, x_label='loss')
+    plot_performance(
+        history.history['accuracy'],
+        history.history['val_accuracy'],
+        dataset=f"train_{lang}{identifier}",
+        x_label='accuracy'
+    )
+
+    plot_performance(
+        history.history['loss'],
+        history.history['val_loss'],
+        dataset=f"train_{lang}{identifier}",
+        x_label='loss'
+    )
 
     return classification_model
 
 
-def test_classification_model(classification_model, dataset, encoded_test_labels, batch_size, sentence_length) -> float:
-    encoded_input = tokenizer(
-        dataset,
-        padding='max_length',
-        max_length=sentence_length,
-        truncation=True,
-        return_tensors='tf'
-    )
-    classification_input = model_bert(encoded_input)["last_hidden_state"]
+def test_classification_model(model, data: dict, lang: str, batch_size: int) -> float:
 
-    test_loss, test_accuracy = classification_model.evaluate(classification_input, encoded_test_labels,
-                                                             batch_size=batch_size)
+    test_data = data[f"train_{lang}"]
+    test_labels = data[f"train_{lang}_labels"]
+
+    test_loss, test_accuracy = model.evaluate(test_data, test_labels, batch_size=batch_size)
     print('Test Loss: {:.2f}'.format(test_loss))
     print('Test Accuracy: {:.2f}'.format(test_accuracy))
     return test_accuracy
