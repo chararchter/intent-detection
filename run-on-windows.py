@@ -131,25 +131,43 @@ print(df)
 
 # ### Using machine translated non-English datasets
 
+train_all_en = tf.concat(
+    [data[key] for key in ['train_en', 'train_lv_en', 'train_ru_en', 'train_et_en', 'train_lt_en']], axis=0)
+train_all_en_labels = tf.concat(
+    [data[key] for key in
+     ['train_en_labels', 'train_lv_en_labels', 'train_ru_en_labels', 'train_et_en_labels', 'train_lt_en_labels']],
+    axis=0
+)
+train_all_en_validation = tf.concat(
+    [data[key] for key in
+     ['train_en_validation', 'train_lv_en_validation', 'train_ru_en_validation', 'train_et_en_validation',
+      'train_lt_en_validation']
+     ], axis=0
+)
+train_all_en_labels_validation = tf.concat(
+    [data[key] for key in
+     ['train_en_labels_validation', 'train_lv_en_labels_validation',
+      'train_ru_en_labels_validation', 'train_et_en_labels_validation',
+      'train_lt_en_labels_validation']], axis=0
+)
 
-# one big training dataset
-all_train_en = []
-all_train_en.extend(en_train)
-all_train_en.extend(lv_train_en)
-all_train_en.extend(ru_train_en)
-all_train_en.extend(et_train_en)
-all_train_en.extend(lt_train_en)
+data.update({'train_all_en': train_all_en, 'train_all_en_labels': train_all_en_labels,
+             'train_all_en_validation': train_all_en_validation,
+             'train_all_en_labels_validation': train_all_en_labels_validation})
+print(data)
 
-classification_model_all = training(all_train_en, dataset_name="all_train_en", learning_rate=learning_rate,
-                                    sentence_length=sentence_length, labels=all_train_labels)
 
-accuracy_lv = test_classification_model(classification_model_all, lv_test, encoded_test_labels)
+classification_all = training(data, "all", learning_rate, sentence_length, batch_size, epochs, machine_translated=True)
 
-accuracy_ru = test_classification_model(classification_model_all, ru_test, encoded_test_labels)
+accuracy_en = test_classification_model(classification_all, data, "all_en", batch_size)
 
-accuracy_et = test_classification_model(classification_model_all, et_test, encoded_test_labels)
+accuracy_lv = test_classification_model(classification_all, data, "all_lv", batch_size)
 
-accuracy_lt = test_classification_model(classification_model_all, lt_test, encoded_test_labels)
+accuracy_ru = test_classification_model(classification_all, data, "all_ru", batch_size)
+
+accuracy_et = test_classification_model(classification_all, data, "all_et", batch_size)
+
+accuracy_lt = test_classification_model(classification_all, data, "all_lt", batch_size)
 
 df['4_method'] = [None, accuracy_lv, accuracy_ru, accuracy_et, accuracy_lt]
 print(df)

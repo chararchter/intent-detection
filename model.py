@@ -205,6 +205,8 @@ def training(data, lang: str, learning_rate: int, sentence_length: int, batch_si
     identifier = get_identifier(machine_translated)
 
     train_data = data[f"train_{lang}{identifier}"]
+    # TODO: stack attributes in different levels: test/train, language and machine translated yes/no
+    # t = data["train"][lang][[identifier]]
     train_labels = data[f"train_{lang}{identifier}_labels"]
     validation_data = data[f"train_{lang}{identifier}_validation"]
     validation_labels = data[f"train_{lang}{identifier}_labels_validation"]
