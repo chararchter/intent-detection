@@ -1,4 +1,4 @@
-from typing import Iterable, Literal
+from typing import Iterable, Tuple
 
 import pandas as pd
 import tensorflow as tf
@@ -75,26 +75,27 @@ class MyModel:
                              'train_ru_en_labels_validation',
                              'train_et_en_labels_validation', 'train_lt_en_labels_validation'])
 
-    def run_untranslated(self, translated: bool = False, trans: Literal["translated", "untranslated"] = "translated"):
-        # data falls in two categories:
-        # one is untranslated (original language) or translated (to english)
-        # second one normal, all languages meshed up together or just english
-        temp_results = []
-        for language in self.languages:
+    def is_translated(self, translated: bool = False) -> Tuple[list, list, str]:
+        """ Return appropriate parameters based on whether the data has been machine translated to English
+        :param translated: has the data been machine translated to English?
+        :return: which list of languages to use, initialized result set and column name for results dataframe
+        """
+        if translated:
+            return self.non_eng_languages, [None], "translated"
+        else:
+            return self.languages, [], "untranslated"
+
+    def train_and_test_on_same_language(self, translated: bool = False):
+        """ Each language has its own model, e.g., training on Latvian, testing on Latvian
+        :param translated: has the data been machine translated to English?
+        """
+        temp_languages, temp_results, col_name = self.is_translated(translated)
+        for language in temp_languages:
             classification = training(self.data, language, self.learning_rate, self.sentence_length, self.batch_size,
                                       self.epochs)
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
-        self.results['1_method'] = temp_results
-        self.results.to_csv("results.csv", index=False)
-
-    def run_translated(self):
-        temp_results = [None]
-        for language in self.non_eng_languages:
-            classification = training(self.data, language, self.learning_rate, self.sentence_length,
-                                      self.batch_size, self.epochs)
-            temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
-        self.results['2_method'] = temp_results
-        self.results.to_csv("results.csv", index=False)
+        self.results[f"1_{col_name}"] = temp_results
+        self.results.to_csv('results.csv', index=False)
 
     def run_untranslated_together(self):
         classification = training(self.data, "all", self.learning_rate, self.sentence_length,
@@ -231,8 +232,8 @@ class MyModel:
 
 if __name__ == "__main__":
     model = MyModel(batch_size=52, learning_rate=0.003, epochs=100, sentence_length=20)
-    model.run_untranslated()
-    model.run_translated()
+    model.train_and_test_on_same_language(translated=True)
+    model.train_and_test_on_same_language(translated=False)
     model.run_untranslated_together()
     model.run_translated_together()
     model.train_on_english_only_untranslated()
