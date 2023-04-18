@@ -27,6 +27,7 @@ class MyModel:
         # allows to run model one language at the time
         self.languages = [languages] if isinstance(languages, str) else languages
         self.non_eng_languages = list(set(self.languages) - {"en"})
+        self.non_eng_languages = [language + "_en" for language in self.non_eng_languages]
 
         self.init_dataset()
         self.init_data()
@@ -84,14 +85,16 @@ class MyModel:
                                       self.epochs)
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results['1_method'] = temp_results
+        self.results.to_csv("results.csv", index=False)
 
     def run_translated(self):
         temp_results = [None]
         for language in self.non_eng_languages:
             classification = training(self.data, language, self.learning_rate, self.sentence_length,
                                       self.batch_size, self.epochs)
-            temp_results.append(test_classification_model(classification, self.data, f"{language}_en", self.batch_size))
+            temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results['2_method'] = temp_results
+        self.results.to_csv("results.csv", index=False)
 
     def run_untranslated_together(self):
         classification = training(self.data, "all", self.learning_rate, self.sentence_length,
@@ -101,6 +104,7 @@ class MyModel:
         for language in self.languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results['3_method'] = temp_results
+        self.results.to_csv("results.csv", index=False)
 
     def run_translated_together(self):
         classification = training(self.data, "all_en", self.learning_rate, self.sentence_length,
@@ -108,8 +112,9 @@ class MyModel:
 
         temp_results = [None]
         for language in self.non_eng_languages:
-            temp_results.append(test_classification_model(classification, self.data, f"{language}_en", self.batch_size))
+            temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results['4_method'] = temp_results
+        self.results.to_csv("results.csv", index=False)
 
     def train_on_english_only_untranslated(self):
         classification = training(self.data, "en", self.learning_rate, self.sentence_length,
@@ -118,14 +123,16 @@ class MyModel:
         for language in self.languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results['5_method'] = temp_results
+        self.results.to_csv("results.csv", index=False)
 
     def train_on_english_only_translated(self):
         classification = training(self.data, "en", self.learning_rate, self.sentence_length,
                                   self.batch_size, self.epochs)
         temp_results = [None]
         for language in self.non_eng_languages:
-            temp_results.append(test_classification_model(classification, self.data, f"{language}_en", self.batch_size))
+            temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results['6_method'] = temp_results
+        self.results.to_csv("results.csv", index=False)
 
     def create_model_one_layer(self):
         model = Sequential()
