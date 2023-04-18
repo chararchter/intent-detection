@@ -128,7 +128,7 @@ def labels_to_categorical(data: dict) -> dict:
     return data
 
 
-def create_model_one_layer(sentence_length: int, units: int = 2, hidden_size: int = 768):
+def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
     model.add(Dense(units, activation='softmax'))
@@ -153,7 +153,7 @@ def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, ep
 
 def get_classification_model(learning_rate: float, sentence_length: int):
     optimizer = create_adam_optimizer(lr=learning_rate)
-    classification_model = create_model_one_layer(sentence_length=sentence_length)
+    classification_model = create_model(sentence_length=sentence_length)
 
     classification_model.compile(
         optimizer=optimizer,
@@ -192,24 +192,14 @@ def convert_to_embeddings(data: dict, sentence_length: int) -> dict:
     return data
 
 
-def get_identifier(machine_translated: bool = False) -> str:
-    if machine_translated:
-        return "_en"
-    else:
-        return ""
+def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int):
 
-
-def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int,
-             machine_translated: bool = False):
-
-    identifier = get_identifier(machine_translated)
-
-    train_data = data[f"train_{lang}{identifier}"]
+    train_data = data[f"train_{lang}"]
     # TODO: stack attributes in different levels: test/train, language and machine translated yes/no
     # t = data["train"][lang][[identifier]]
-    train_labels = data[f"train_{lang}{identifier}_labels"]
-    validation_data = data[f"train_{lang}{identifier}_validation"]
-    validation_labels = data[f"train_{lang}{identifier}_labels_validation"]
+    train_labels = data[f"train_{lang}_labels"]
+    validation_data = data[f"train_{lang}_validation"]
+    validation_labels = data[f"train_{lang}_labels_validation"]
 
     print(f"train_data.shape {train_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
     print(f"validation_data.shape {validation_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
@@ -229,14 +219,14 @@ def training(data, lang: str, learning_rate: float, sentence_length: int, batch_
     plot_performance(
         history.history['accuracy'],
         history.history['val_accuracy'],
-        dataset=f"train_{lang}{identifier}",
+        dataset=f"train_{lang}",
         x_label='accuracy'
     )
 
     plot_performance(
         history.history['loss'],
         history.history['val_loss'],
-        dataset=f"train_{lang}{identifier}",
+        dataset=f"train_{lang}",
         x_label='loss'
     )
 

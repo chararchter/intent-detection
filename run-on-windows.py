@@ -1,4 +1,4 @@
-from typing import Iterable, Literal
+from typing import Iterable, Tuple
 
 import pandas as pd
 import tensorflow as tf
@@ -27,6 +27,7 @@ class MyModel:
         # allows to run model one language at the time
         self.languages = [languages] if isinstance(languages, str) else languages
         self.non_eng_languages = list(set(self.languages) - {"en"})
+        self.non_eng_languages = [language + "_en" for language in self.non_eng_languages]
 
         self.init_dataset()
         self.init_data()
@@ -74,85 +75,80 @@ class MyModel:
                              'train_ru_en_labels_validation',
                              'train_et_en_labels_validation', 'train_lt_en_labels_validation'])
 
-    def run_untranslated(self, translated: bool = False, trans: Literal["translated", "untranslated"] = "translated"):
-        # data falls in two categories:
-        # one is untranslated (original language) or translated (to english)
-        # second one normal, all languages meshed up together or just english
-        temp_results = []
-        for language in self.languages:
+    def is_translated(self, translated: bool = False) -> Tuple[list, list, str, str]:
+        """ Return appropriate parameters based on whether the data has been machine translated to English
+        :param translated: has the data been machine translated to English?
+        :return: which list of languages to use, initialized result set and column name for results dataframe
+        """
+        if translated:
+            return self.non_eng_languages, [None], "translated", "_en"
+        else:
+            return self.languages, [], "untranslated", ""
+
+    def train_and_test_on_same_language(self, translated: bool = False):
+        """ Each language has its own model, e.g., training on Latvian, testing on Latvian
+        :param translated: has the data been machine translated to English?
+        """
+        temp_languages, temp_results, col_name, discard = self.is_translated(translated)
+        for language in temp_languages:
             classification = training(self.data, language, self.learning_rate, self.sentence_length, self.batch_size,
                                       self.epochs)
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
-        self.results['1_method'] = temp_results
+        self.results[f"1_{col_name}"] = temp_results
+        self.results.to_csv('results.csv', index=False)
 
-    def run_translated(self):
-        temp_results = [None]
-        for language in self.non_eng_languages:
-            classification = training(self.data, language, self.learning_rate, self.sentence_length,
-                                      self.batch_size, self.epochs)
-            temp_results.append(test_classification_model(classification, self.data, f"{language}_en", self.batch_size))
-        self.results['2_method'] = temp_results
-
-    def run_untranslated_together(self):
-        classification = training(self.data, "all", self.learning_rate, self.sentence_length,
+    def train_on_all_languages_test_on_one(self, translated: bool = False):
+        """ One model trained on all language datasets, tested on each language separately
+        e.g., training on all, testing on Latvian
+        :param translated: has the data been machine translated to English?
+        """
+        temp_languages, temp_results, col_name, identifier = self.is_translated(translated)
+        classification = training(self.data, f"all{identifier}", self.learning_rate, self.sentence_length,
                                   self.batch_size, self.epochs)
 
-        temp_results = []
-        for language in self.languages:
+        for language in temp_languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
-        self.results['3_method'] = temp_results
+        self.results[f"2_{col_name}"] = temp_results
+        self.results.to_csv("results.csv", index=False)
 
-    def run_translated_together(self):
-        classification = training(self.data, "all_en", self.learning_rate, self.sentence_length,
-                                  self.batch_size, self.epochs)
-
-        temp_results = [None]
-        for language in self.non_eng_languages:
-            temp_results.append(test_classification_model(classification, self.data, f"{language}_en", self.batch_size))
-        self.results['4_method'] = temp_results
-
-    def train_on_english_only_untranslated(self):
+    def train_on_english_test_on_non_english(self, translated: bool = False):
+        """ Trained on English only, tested on non-English
+        e.g., training on English, testing on Latvian
+        :param translated: has the data been machine translated to English?
+        """
+        temp_languages, temp_results, col_name, discard = self.is_translated(translated)
         classification = training(self.data, "en", self.learning_rate, self.sentence_length,
                                   self.batch_size, self.epochs)
-        temp_results = []
-        for language in self.languages:
+
+        for language in temp_languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
-        self.results['5_method'] = temp_results
+        self.results[f"3_{col_name}"] = temp_results
+        self.results.to_csv("results.csv", index=False)
 
-    def train_on_english_only_translated(self):
-        classification = training(self.data, "en", self.learning_rate, self.sentence_length,
-                                  self.batch_size, self.epochs)
-        temp_results = [None]
-        for language in self.non_eng_languages:
-            temp_results.append(test_classification_model(classification, self.data, f"{language}_en", self.batch_size))
-        self.results['6_method'] = temp_results
-
-    def create_model_one_layer(self):
+    def create_model(self):
         model = Sequential()
         model.add(tf.keras.Input(shape=(self.sentence_length, self.hidden_size)))
         model.add(Dense(self.units, activation='softmax'))
-        print(model.summary())
         model.add(Conv1D(self.units, self.sentence_length, padding="valid", activation="softmax"))
-        print(model.summary())
         # model.add(MaxPooling1D(pool_size=2))
         # print(model.summary())
         model.add(Dropout(0.05))  # make smaller dropout
-        print(model.summary())
         model.add(Dense(self.units, activation='softmax'))
-        model.add(tf.keras.layers.Lambda(
-            lambda x: tf.squeeze(x, axis=1)))  # squeeze the output to remove dimension with size 1
+        # squeeze the output to remove dimension with size 1
+        model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1)))
         print(model.summary())
         return model
 
     def create_adam_optimizer(self, beta_1=0.9, beta_2=0.999, weight_decay=0, epsilon=0, amsgrad=False):
         # sgd is worse than adam
-        return tf.keras.optimizers.Adam(learning_rate=self.learning_rate, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon,
-                                        amsgrad=amsgrad,
-                                        weight_decay=weight_decay)
+        return tf.keras.optimizers.Adam(
+            learning_rate=self.learning_rate, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon,
+            amsgrad=amsgrad, weight_decay=weight_decay
+        )
 
     def get_classification_model(self):
         optimizer = self.create_adam_optimizer()
-        classification_model = self.create_model_one_layer()
+        classification_model = self.create_model()
 
         classification_model.compile(
             optimizer=optimizer,
@@ -169,8 +165,11 @@ class MyModel:
             for lang in value:
                 self.data.update({f"{key}_{lang}": get_source_text(dataset_type=key, source_language=lang)})
                 if lang != "en":
-                    self.data.update({f"{key}_{lang}_en": get_source_text(dataset_type=key, source_language=lang,
-                                                                          machine_translated=True)})
+                    self.data.update({f"{key}_{lang}_en": get_source_text(
+                        dataset_type=key,
+                        source_language=lang,
+                        machine_translated=True
+                    )})
 
     def labels_to_categorical(self):
         """ Convert string labels to categorical data
@@ -212,9 +211,13 @@ class MyModel:
     def get_word_embeddings(self, vectorizable_strings: list) -> EagerTensor:
         """ Convert input to word embeddings
         """
-        encoded_input = tokenizer(vectorizable_strings, padding='max_length', max_length=self.sentence_length,
-                                  truncation=True,
-                                  return_tensors='tf')
+        encoded_input = tokenizer(
+            vectorizable_strings,
+            padding='max_length',
+            max_length=self.sentence_length,
+            truncation=True,
+            return_tensors='tf'
+        )
         return model_bert(encoded_input)["last_hidden_state"]
 
     def merge_all_data(self, new_key_name: str, keys_to_merge: Iterable):
@@ -224,9 +227,9 @@ class MyModel:
 
 if __name__ == "__main__":
     model = MyModel(batch_size=52, learning_rate=0.003, epochs=100, sentence_length=20)
-    model.run_untranslated()
-    model.run_translated()
-    model.run_untranslated_together()
-    model.run_translated_together()
-    model.train_on_english_only_untranslated()
-    model.train_on_english_only_translated()
+    model.train_and_test_on_same_language(translated=True)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)
