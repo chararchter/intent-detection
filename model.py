@@ -128,7 +128,7 @@ def labels_to_categorical(data: dict) -> dict:
     return data
 
 
-def create_model_one_layer(sentence_length: int, units: int = 2, hidden_size: int = 768):
+def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
     model.add(Dense(units, activation='softmax'))
@@ -153,7 +153,7 @@ def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, ep
 
 def get_classification_model(learning_rate: float, sentence_length: int):
     optimizer = create_adam_optimizer(lr=learning_rate)
-    classification_model = create_model_one_layer(sentence_length=sentence_length)
+    classification_model = create_model(sentence_length=sentence_length)
 
     classification_model.compile(
         optimizer=optimizer,
