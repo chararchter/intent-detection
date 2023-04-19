@@ -2,7 +2,7 @@ from typing import Iterable, Tuple
 
 import pandas as pd
 import tensorflow as tf
-from keras.layers import Dense, Conv1D, Dropout
+from keras.layers import Dense, Conv1D, Dropout, MaxPooling1D
 from keras.models import Sequential
 from keras.regularizers import l2
 from keras.utils import to_categorical
@@ -127,13 +127,13 @@ class MyModel:
         self.results.to_csv("results.csv", index=False)
 
     def create_model(self):
-        # kernel_regularizer_coef = 0.01 # worked ok too
         kernel_regularizer_coef = 0.1
         model = Sequential()
         model.add(tf.keras.Input(shape=(self.sentence_length, self.hidden_size)))
         model.add(Dense(self.units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
         model.add(Conv1D(self.units, self.sentence_length, padding="valid", activation="softmax",
                          kernel_regularizer=l2(kernel_regularizer_coef)))
+        model.add(MaxPooling1D(pool_size=3))
         model.add(Dropout(0.05))
         model.add(Dense(self.units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
         model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1)))
@@ -224,6 +224,7 @@ class MyModel:
     def merge_all_data(self, new_key_name: str, keys_to_merge: Iterable):
         new_values = tf.concat([self.data[key] for key in keys_to_merge], axis=0)
         self.data.update({new_key_name: new_values})
+
 
 # learning_rate=0.0001 is too small
 if __name__ == "__main__":
