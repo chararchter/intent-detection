@@ -4,6 +4,7 @@ import pandas as pd
 import tensorflow as tf
 from keras.layers import Dense, Conv1D, Dropout
 from keras.models import Sequential
+from keras.regularizers import l2
 from keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.framework.ops import EagerTensor
@@ -126,15 +127,15 @@ class MyModel:
         self.results.to_csv("results.csv", index=False)
 
     def create_model(self):
+        # kernel_regularizer_coef = 0.01 # worked ok too
+        kernel_regularizer_coef = 0.1
         model = Sequential()
         model.add(tf.keras.Input(shape=(self.sentence_length, self.hidden_size)))
-        model.add(Dense(self.units, activation='softmax'))
-        model.add(Conv1D(self.units, self.sentence_length, padding="valid", activation="softmax"))
-        # model.add(MaxPooling1D(pool_size=2))
-        # print(model.summary())
-        model.add(Dropout(0.05))  # make smaller dropout
-        model.add(Dense(self.units, activation='softmax'))
-        # squeeze the output to remove dimension with size 1
+        model.add(Dense(self.units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
+        model.add(Conv1D(self.units, self.sentence_length, padding="valid", activation="softmax",
+                         kernel_regularizer=l2(kernel_regularizer_coef)))
+        model.add(Dropout(0.05))
+        model.add(Dense(self.units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
         model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1)))
         print(model.summary())
         return model
@@ -224,9 +225,9 @@ class MyModel:
         new_values = tf.concat([self.data[key] for key in keys_to_merge], axis=0)
         self.data.update({new_key_name: new_values})
 
-
+# learning_rate=0.0001 is too small
 if __name__ == "__main__":
-    model = MyModel(batch_size=52, learning_rate=0.003, epochs=100, sentence_length=20)
+    model = MyModel(batch_size=24, learning_rate=0.001, epochs=100, sentence_length=20)
     model.train_and_test_on_same_language(translated=True)
     model.train_and_test_on_same_language(translated=False)
     model.train_on_all_languages_test_on_one(translated=True)
