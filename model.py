@@ -2,11 +2,10 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from keras.layers import Dense, Conv1D, Dropout, MaxPooling1D, Flatten
+from keras.layers import Dense, Conv1D, Dropout
 from keras.models import Sequential
-from keras.utils import to_categorical
+from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from transformers import BertTokenizer, TFBertModel
 
 model_name = "bert-base-multilingual-cased"  # loading from huggingface
@@ -112,19 +111,37 @@ def plot_performance(training_data, validation_data, dataset: str, x_label: str 
     plt.show()
 
 
+# def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
+#     model = Sequential()
+#     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
+#     model.add(Dense(units, activation='softmax'))
+#     print(model.summary())
+#     model.add(Conv1D(units, sentence_length, padding="valid", activation="softmax"))
+#     print(model.summary())
+#     # model.add(MaxPooling1D(pool_size=2))
+#     # print(model.summary())
+#     model.add(Dropout(0.05))  # make smaller dropout
+#     print(model.summary())
+#     model.add(Dense(units, activation='softmax'))
+#     model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1))) # squeeze the output to remove dimension with size 1
+#     print(model.summary())
+#     return model
+
 def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
+    kernel_regularizer_coef = 0.1
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
-    model.add(Dense(units, activation='softmax'))
+    model.add(Dense(units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
     print(model.summary())
-    model.add(Conv1D(units, sentence_length, padding="valid", activation="softmax"))
+    model.add(Conv1D(units, sentence_length, padding="valid", activation="softmax",
+                     kernel_regularizer=l2(kernel_regularizer_coef)))
     print(model.summary())
-    # model.add(MaxPooling1D(pool_size=2))
-    # print(model.summary())
-    model.add(Dropout(0.05))  # make smaller dropout
+    # model.add(MaxPooling1D(pool_size=3))
+    model.add(Dropout(0.05))
     print(model.summary())
-    model.add(Dense(units, activation='softmax'))
-    model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1))) # squeeze the output to remove dimension with size 1
+    model.add(Dense(units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
+    # squeeze the output to remove dimension with size 1
+    model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1)))
     print(model.summary())
     return model
 
