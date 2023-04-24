@@ -7,7 +7,8 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.framework.ops import EagerTensor
 
 from model import training, \
-    test_classification_model, get_source_text, split_train_data, tokenizer_bert, model_bert
+    test_classification_model, get_source_text, split_train_data, tokenizer_roberta, \
+    model_roberta
 
 
 class MyModel:
@@ -178,16 +179,14 @@ class MyModel:
     def get_word_embeddings(self, vectorizable_strings: list) -> EagerTensor:
         """ Convert input to word embeddings
         """
-        encoded_input = tokenizer_bert(
+        encoded_input = tokenizer_roberta(
             vectorizable_strings,
             padding='max_length',
             max_length=self.sentence_length,
             truncation=True,
             return_tensors='tf'
         )
-        temp = model_bert(encoded_input)
-        print(temp)
-        return model_bert(encoded_input)["last_hidden_state"]
+        return model_roberta(encoded_input)["last_hidden_state"]
 
     def merge_all_data(self, new_key_name: str, keys_to_merge: Iterable):
         new_values = tf.concat([self.data[key] for key in keys_to_merge], axis=0)

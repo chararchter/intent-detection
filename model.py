@@ -6,7 +6,7 @@ from keras.layers import Dense, Conv1D, Dropout
 from keras.models import Sequential
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
-from transformers import BertTokenizer, TFBertModel, AutoTokenizer, TFAutoModelForMaskedLM
+from transformers import BertTokenizer, TFBertModel, AutoTokenizer, TFAutoModel
 
 model_name = "bert-base-multilingual-cased"  # loading from huggingface
 model_name = "./bert-base-multilingual-cased"  # loading from local path
@@ -18,8 +18,7 @@ model_name = "xlm-roberta-base"  # loading from huggingface
 model_name = "./xlm-roberta-base"  # loading from local path
 
 tokenizer_roberta = AutoTokenizer.from_pretrained(model_name)
-model_roberta = TFAutoModelForMaskedLM.from_pretrained(model_name)
-
+model_roberta = TFAutoModel.from_pretrained(model_name)
 
 def read_file(path: str) -> List[str]:
     """ Read path and append each line without \n as an element to an array.
