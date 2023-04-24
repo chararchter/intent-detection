@@ -1,8 +1,10 @@
+from typing import List
+
 import tensorflow as tf
 from keras.layers import Dense, Conv1D
 from keras.models import Sequential
 
-from model import tokenizer, model_bert, create_adam_optimizer, get_source_text, encode_labels
+from model import tokenizer, model_bert, get_source_text, create_adam_optimizer
 
 # Hyperparameters
 units = 2
@@ -11,6 +13,21 @@ batch_size = 4
 sentence_length = 20
 learning_rate = 0.03
 epochs = 5
+
+
+# for backwards compatibility, the new version is using keras.to_categorical()
+def encode_labels(answers: List) -> List:
+    """ Encode labels in one hot-encoding
+    'FindConnection' corresponds to [[1, 0]]
+    'DepartureTime' corresponds to [[0, 1]]
+    """
+    y = []
+    for answer in answers:
+        if answer == 'FindConnection':
+            y.append([[1, 0]])
+        else:
+            y.append([[0, 1]])
+    return y
 
 
 # # A small example

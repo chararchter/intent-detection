@@ -126,37 +126,6 @@ class MyModel:
         self.results[f"3_{col_name}"] = temp_results
         self.results.to_csv("results.csv", index=False)
 
-    def create_model(self):
-        kernel_regularizer_coef = 0.1
-        model = Sequential()
-        model.add(tf.keras.Input(shape=(self.sentence_length, self.hidden_size)))
-        model.add(Dense(self.units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
-        model.add(Conv1D(self.units, self.sentence_length, padding="valid", activation="softmax",
-                         kernel_regularizer=l2(kernel_regularizer_coef)))
-        model.add(MaxPooling1D(pool_size=3))
-        model.add(Dropout(0.05))
-        model.add(Dense(self.units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
-        model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1)))
-        print(model.summary())
-        return model
-
-    def create_adam_optimizer(self, beta_1=0.9, beta_2=0.999, weight_decay=0, epsilon=0, amsgrad=False):
-        # sgd is worse than adam
-        return tf.keras.optimizers.Adam(
-            learning_rate=self.learning_rate, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon,
-            amsgrad=amsgrad, weight_decay=weight_decay
-        )
-
-    def get_classification_model(self):
-        optimizer = self.create_adam_optimizer()
-        classification_model = self.create_model()
-
-        classification_model.compile(
-            optimizer=optimizer,
-            loss='categorical_crossentropy',
-            metrics=['accuracy']
-        )
-        return classification_model
 
     def get_dataset(self):
         """ Initialize data dictionary with values read from files
@@ -230,8 +199,8 @@ class MyModel:
 if __name__ == "__main__":
     model = MyModel(batch_size=24, learning_rate=0.001, epochs=100, sentence_length=20)
     model.train_and_test_on_same_language(translated=True)
-    model.train_and_test_on_same_language(translated=False)
-    model.train_on_all_languages_test_on_one(translated=True)
-    model.train_on_all_languages_test_on_one(translated=False)
-    model.train_on_english_test_on_non_english(translated=True)
-    model.train_on_english_test_on_non_english(translated=False)
+    # model.train_and_test_on_same_language(translated=False)
+    # model.train_on_all_languages_test_on_one(translated=True)
+    # model.train_on_all_languages_test_on_one(translated=False)
+    # model.train_on_english_test_on_non_english(translated=True)
+    # model.train_on_english_test_on_non_english(translated=False)

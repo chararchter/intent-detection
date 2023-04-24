@@ -49,21 +49,6 @@ def get_source_text(dataset_type: str, source_language: str = None, labels: bool
         return read_file(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
 
 
-# use keras.to_categorical() instead
-def encode_labels(answers: List) -> List:
-    """ Encode labels in one hot-encoding
-    'FindConnection' corresponds to [[1, 0]]
-    'DepartureTime' corresponds to [[0, 1]]
-    """
-    y = []
-    for answer in answers:
-        if answer == 'FindConnection':
-            y.append([[1, 0]])
-        else:
-            y.append([[0, 1]])
-    return y
-
-
 def get_dataset(datasets: dict, need_labels: bool = True) -> dict:
     """
     :param datasets:
@@ -115,17 +100,16 @@ def split_validation(datasets: dict, data: dict) -> dict:
     return data
 
 
-def labels_to_categorical(data: dict) -> dict:
-    """ Convert string labels to categorical data
-    """
-    label_encoder = LabelEncoder()
-    for key in data.keys():
-        if "labels" in key:
-            # Encode string labels to integer labels
-            data[key] = label_encoder.fit_transform(data[key])
-            # Convert integer labels to categorical data
-            data[key] = to_categorical(data[key], num_classes=len(label_encoder.classes_))
-    return data
+def plot_performance(training_data, validation_data, dataset: str, x_label: str = 'accuracy'):
+    plt.plot(training_data, label='training')
+    plt.plot(validation_data, label='validation')
+    ax = plt.gca()
+    ax.set_xlabel('epochs')
+    ax.set_ylabel(x_label)
+    plt.title(f"{dataset} model {x_label}")
+    plt.legend(loc="center")
+    plt.savefig(f"graphs/{dataset}-{x_label}.png")
+    plt.show()
 
 
 def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
@@ -161,35 +145,6 @@ def get_classification_model(learning_rate: float, sentence_length: int):
         metrics=['accuracy']
     )
     return classification_model
-
-
-def plot_performance(training_data, validation_data, dataset: str, x_label: str = 'accuracy'):
-    plt.plot(training_data, label='training')
-    plt.plot(validation_data, label='validation')
-    ax = plt.gca()
-    ax.set_xlabel('epochs')
-    ax.set_ylabel(x_label)
-    plt.title(f"{dataset} model {x_label}")
-    plt.legend(loc="center")
-    plt.savefig(f"graphs/{dataset}-{x_label}.png")
-    plt.show()
-
-
-def get_word_embeddings(data: list, sentence_length: int):
-    encoded_input = tokenizer(data, padding='max_length', max_length=sentence_length, truncation=True,
-                              return_tensors='tf')
-    return model_bert(encoded_input)["last_hidden_state"]
-
-
-def convert_to_embeddings(data: dict, sentence_length: int) -> dict:
-    """ Convert data to word embeddings
-    :param data: dictionary with test/train, language and labels as key and data as values
-    :return: updated data dictionary with sentences converted to word embeddings
-    """
-    for key, value in data.items():
-        if "labels" not in key:
-            data[key] = get_word_embeddings(data[key], sentence_length)
-    return data
 
 
 def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int):
