@@ -11,7 +11,7 @@ from transformers import BertTokenizer, TFBertModel
 model_name = "bert-base-multilingual-cased"  # loading from huggingface
 model_name = "./bert-base-multilingual-cased"  # loading from local path
 
-tokenizer = BertTokenizer.from_pretrained(model_name)
+tokenizer_bert = BertTokenizer.from_pretrained(model_name)
 model_bert = TFBertModel.from_pretrained(model_name)
 
 

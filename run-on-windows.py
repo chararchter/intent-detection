@@ -2,15 +2,12 @@ from typing import Iterable, Tuple
 
 import pandas as pd
 import tensorflow as tf
-from keras.layers import Dense, Conv1D, Dropout, MaxPooling1D
-from keras.models import Sequential
-from keras.regularizers import l2
 from keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.framework.ops import EagerTensor
 
 from model import training, \
-    test_classification_model, get_source_text, split_train_data, tokenizer, model_bert
+    test_classification_model, get_source_text, split_train_data, tokenizer_bert, model_bert
 
 
 class MyModel:
@@ -181,7 +178,7 @@ class MyModel:
     def get_word_embeddings(self, vectorizable_strings: list) -> EagerTensor:
         """ Convert input to word embeddings
         """
-        encoded_input = tokenizer(
+        encoded_input = tokenizer_bert(
             vectorizable_strings,
             padding='max_length',
             max_length=self.sentence_length,
