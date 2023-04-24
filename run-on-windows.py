@@ -10,6 +10,7 @@ from model import training, \
     test_classification_model, get_source_text, split_train_data, tokenizer_bert, model_bert
 
 
+
 class MyModel:
     def __init__(self, batch_size: int, learning_rate: float, epochs: int, sentence_length: int,
                  languages=("en", "lv", "ru", "et", "lt")):
@@ -185,8 +186,6 @@ class MyModel:
             truncation=True,
             return_tensors='tf'
         )
-        temp = model_bert(encoded_input)
-        print(temp)
         return model_bert(encoded_input)["last_hidden_state"]
 
     def merge_all_data(self, new_key_name: str, keys_to_merge: Iterable):
