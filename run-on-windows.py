@@ -199,8 +199,8 @@ class MyModel:
 if __name__ == "__main__":
     model = MyModel(batch_size=24, learning_rate=0.001, epochs=100, sentence_length=20)
     model.train_and_test_on_same_language(translated=True)
-    # model.train_and_test_on_same_language(translated=False)
-    # model.train_on_all_languages_test_on_one(translated=True)
-    # model.train_on_all_languages_test_on_one(translated=False)
-    # model.train_on_english_test_on_non_english(translated=True)
-    # model.train_on_english_test_on_non_english(translated=False)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)

@@ -110,25 +110,8 @@ def plot_performance(training_data, validation_data, dataset: str, x_label: str 
     plt.savefig(f"graphs/{dataset}-{x_label}.png")
     plt.show()
 
-
-# def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
-#     model = Sequential()
-#     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
-#     model.add(Dense(units, activation='softmax'))
-#     print(model.summary())
-#     model.add(Conv1D(units, sentence_length, padding="valid", activation="softmax"))
-#     print(model.summary())
-#     # model.add(MaxPooling1D(pool_size=2))
-#     # print(model.summary())
-#     model.add(Dropout(0.05))  # make smaller dropout
-#     print(model.summary())
-#     model.add(Dense(units, activation='softmax'))
-#     model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1))) # squeeze the output to remove dimension with size 1
-#     print(model.summary())
-#     return model
-
 def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
-    kernel_regularizer_coef = 0.1
+    kernel_regularizer_coef = 0.01
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
     model.add(Dense(units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
@@ -136,7 +119,6 @@ def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
     model.add(Conv1D(units, sentence_length, padding="valid", activation="softmax",
                      kernel_regularizer=l2(kernel_regularizer_coef)))
     print(model.summary())
-    # model.add(MaxPooling1D(pool_size=3))
     model.add(Dropout(0.05))
     print(model.summary())
     model.add(Dense(units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
