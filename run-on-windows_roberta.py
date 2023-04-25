@@ -27,8 +27,9 @@ class MyModel:
         self.languages = [languages] if isinstance(languages, str) else languages
         self.non_eng_languages = list(set(self.languages) - {"en"})
         self.non_eng_languages = [language + "_en" for language in self.non_eng_languages]
-
         self.csv_file_name = f"{self.model_name}_results.csv"
+
+        self.tokenizer, self.model = get_embeddings_tokenizer_model(self.model_name)
 
         self.init_dataset()
         self.init_data()
@@ -105,7 +106,7 @@ class MyModel:
         """
         temp_languages, temp_results, col_name, identifier = self.is_translated(translated)
         classification = training(self.data, f"all{identifier}", self.learning_rate, self.sentence_length,
-                                  self.batch_size, self.epochs)
+                                  self.batch_size, self.epochs, self.model_name)
 
         for language in temp_languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
@@ -119,7 +120,7 @@ class MyModel:
         """
         temp_languages, temp_results, col_name, discard = self.is_translated(translated)
         classification = training(self.data, "en", self.learning_rate, self.sentence_length,
-                                  self.batch_size, self.epochs)
+                                  self.batch_size, self.epochs, self.model_name)
 
         for language in temp_languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
@@ -182,16 +183,14 @@ class MyModel:
         """ Convert input to word embeddings
         """
 
-        tokenizer_roberta, model_roberta = get_embeddings_tokenizer_model(self.model_name)
-
-        encoded_input = tokenizer_roberta(
+        encoded_input = self.tokenizer(
             vectorizable_strings,
             padding='max_length',
             max_length=self.sentence_length,
             truncation=True,
             return_tensors='tf'
         )
-        return model_roberta(encoded_input)["last_hidden_state"]
+        return self.model(encoded_input)["last_hidden_state"]
 
     def merge_all_data(self, new_key_name: str, keys_to_merge: Iterable):
         new_values = tf.concat([self.data[key] for key in keys_to_merge], axis=0)
