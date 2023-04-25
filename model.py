@@ -8,17 +8,14 @@ from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 from transformers import BertTokenizer, TFBertModel, AutoTokenizer, TFAutoModel
 
-model_name = "bert-base-multilingual-cased"  # loading from huggingface
-model_name = "./bert-base-multilingual-cased"  # loading from local path
 
-tokenizer_bert = BertTokenizer.from_pretrained(model_name)
-model_bert = TFBertModel.from_pretrained(model_name)
+def get_embeddings_tokenizer_model(model_name: str):
+    model_name = f"./{model_name}"
+    if "roberta" in model_name:
+        return AutoTokenizer.from_pretrained(model_name), TFAutoModel.from_pretrained(model_name)
+    else:
+        return BertTokenizer.from_pretrained(model_name), TFBertModel.from_pretrained(model_name)
 
-model_name = "xlm-roberta-base"  # loading from huggingface
-model_name = "./xlm-roberta-base"  # loading from local path
-
-tokenizer_roberta = AutoTokenizer.from_pretrained(model_name)
-model_roberta = TFAutoModel.from_pretrained(model_name)
 
 def read_file(path: str) -> List[str]:
     """ Read path and append each line without \n as an element to an array.
@@ -115,6 +112,7 @@ def plot_performance(training_data, validation_data, dataset: str, x_label: str 
     plt.savefig(f"graphs/{dataset}-{x_label}.png")
     plt.show()
 
+
 def create_model(sentence_length: int, units: int = 2, hidden_size: int = 768):
     kernel_regularizer_coef = 0.01
     model = Sequential()
@@ -151,8 +149,7 @@ def get_classification_model(learning_rate: float, sentence_length: int):
     return classification_model
 
 
-def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int):
-
+def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int, model_name: str):
     train_data = data[f"train_{lang}"]
     # TODO: stack attributes in different levels: test/train, language and machine translated yes/no
     # t = data["train"][lang][[identifier]]
@@ -178,14 +175,14 @@ def training(data, lang: str, learning_rate: float, sentence_length: int, batch_
     plot_performance(
         history.history['accuracy'],
         history.history['val_accuracy'],
-        dataset=f"train_{lang}",
+        dataset=f"{model_name}_{lang}",
         x_label='accuracy'
     )
 
     plot_performance(
         history.history['loss'],
         history.history['val_loss'],
-        dataset=f"train_{lang}",
+        dataset=f"{model_name}_{lang}",
         x_label='loss'
     )
 
@@ -193,7 +190,6 @@ def training(data, lang: str, learning_rate: float, sentence_length: int, batch_
 
 
 def test_classification_model(model, data: dict, lang: str, batch_size: int) -> float:
-
     test_data = data[f"train_{lang}"]
     test_labels = data[f"train_{lang}_labels"]
 

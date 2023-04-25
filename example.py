@@ -4,7 +4,7 @@ import tensorflow as tf
 from keras.layers import Dense, Conv1D
 from keras.models import Sequential
 
-from model import tokenizer_bert, model_bert, get_source_text, create_adam_optimizer
+from model import get_source_text, create_adam_optimizer, get_embeddings_tokenizer_model
 
 # Hyperparameters
 units = 2
@@ -42,12 +42,15 @@ encoded_train_labels = tf.convert_to_tensor(encoded_train_labels)
 text = en_train[0:batch_size]
 labels = encoded_train_labels[0:batch_size]
 
-encoded_input = tokenizer_bert(text, padding='max_length', max_length=sentence_length, truncation=True, return_tensors='tf')
+tokenizer_bert, model_bert = get_embeddings_tokenizer_model("bert-base-multilingual-cased")
+
+encoded_input = tokenizer_bert(
+    text, padding='max_length', max_length=sentence_length, truncation=True, return_tensors='tf'
+)
 print(encoded_input)
 
 inputs = model_bert(encoded_input)["last_hidden_state"]
 print(inputs.shape)
-
 
 # ## Word embedding -> classification
 
