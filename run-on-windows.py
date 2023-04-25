@@ -7,17 +7,17 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.framework.ops import EagerTensor
 
 from model import training, \
-    test_classification_model, get_source_text, split_train_data, tokenizer_bert, model_bert
-
+    test_classification_model, get_source_text, split_train_data, get_embeddings_tokenizer_model
 
 
 class MyModel:
-    def __init__(self, batch_size: int, learning_rate: float, epochs: int, sentence_length: int,
+    def __init__(self, batch_size: int, learning_rate: float, epochs: int, sentence_length: int, model_name: str,
                  languages=("en", "lv", "ru", "et", "lt")):
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.epochs = epochs
         self.sentence_length = sentence_length
+        self.model_name = model_name
         self.data = dict()
         self.datasets = dict()
         self.results = pd.DataFrame()
@@ -27,6 +27,9 @@ class MyModel:
         self.languages = [languages] if isinstance(languages, str) else languages
         self.non_eng_languages = list(set(self.languages) - {"en"})
         self.non_eng_languages = [language + "_en" for language in self.non_eng_languages]
+        self.csv_file_name = f"{self.model_name}_results.csv"
+
+        self.tokenizer, self.model = get_embeddings_tokenizer_model(self.model_name)
 
         self.init_dataset()
         self.init_data()
@@ -39,7 +42,8 @@ class MyModel:
         }
 
     def init_results(self):
-        self.results['hyperparameters'] = [self.batch_size, self.sentence_length, self.learning_rate, self.epochs, None]
+        self.results['hyperparameters'] = [self.model_name, self.batch_size, self.sentence_length, self.learning_rate,
+                                           self.epochs]
 
     def init_data(self):
         self.get_dataset()
@@ -91,10 +95,10 @@ class MyModel:
         temp_languages, temp_results, col_name, discard = self.is_translated(translated)
         for language in temp_languages:
             classification = training(self.data, language, self.learning_rate, self.sentence_length, self.batch_size,
-                                      self.epochs)
+                                      self.epochs, self.model_name)
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results[f"1_{col_name}"] = temp_results
-        self.results.to_csv('results.csv', index=False)
+        self.results.to_csv(self.csv_file_name, index=False)
 
     def train_on_all_languages_test_on_one(self, translated: bool = False):
         """ One model trained on all language datasets, tested on each language separately
@@ -103,12 +107,12 @@ class MyModel:
         """
         temp_languages, temp_results, col_name, identifier = self.is_translated(translated)
         classification = training(self.data, f"all{identifier}", self.learning_rate, self.sentence_length,
-                                  self.batch_size, self.epochs)
+                                  self.batch_size, self.epochs, self.model_name)
 
         for language in temp_languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results[f"2_{col_name}"] = temp_results
-        self.results.to_csv("results.csv", index=False)
+        self.results.to_csv(self.csv_file_name, index=False)
 
     def train_on_english_test_on_non_english(self, translated: bool = False):
         """ Trained on English only, tested on non-English
@@ -117,13 +121,12 @@ class MyModel:
         """
         temp_languages, temp_results, col_name, discard = self.is_translated(translated)
         classification = training(self.data, "en", self.learning_rate, self.sentence_length,
-                                  self.batch_size, self.epochs)
+                                  self.batch_size, self.epochs, self.model_name)
 
         for language in temp_languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results[f"3_{col_name}"] = temp_results
-        self.results.to_csv("results.csv", index=False)
-
+        self.results.to_csv(self.csv_file_name, index=False)
 
     def get_dataset(self):
         """ Initialize data dictionary with values read from files
@@ -179,14 +182,15 @@ class MyModel:
     def get_word_embeddings(self, vectorizable_strings: list) -> EagerTensor:
         """ Convert input to word embeddings
         """
-        encoded_input = tokenizer_bert(
+
+        encoded_input = self.tokenizer(
             vectorizable_strings,
             padding='max_length',
             max_length=self.sentence_length,
             truncation=True,
             return_tensors='tf'
         )
-        return model_bert(encoded_input)["last_hidden_state"]
+        return self.model(encoded_input)["last_hidden_state"]
 
     def merge_all_data(self, new_key_name: str, keys_to_merge: Iterable):
         new_values = tf.concat([self.data[key] for key in keys_to_merge], axis=0)
@@ -195,7 +199,16 @@ class MyModel:
 
 # learning_rate=0.0001 is too small
 if __name__ == "__main__":
-    model = MyModel(batch_size=24, learning_rate=0.001, epochs=100, sentence_length=20)
+    model = MyModel(batch_size=24, learning_rate=0.001, epochs=100, sentence_length=20, model_name="xlm-roberta-base")
+    model.train_and_test_on_same_language(translated=True)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)
+
+    model = MyModel(batch_size=24, learning_rate=0.001, epochs=100, sentence_length=20,
+                    model_name="bert-base-multilingual-cased")
     model.train_and_test_on_same_language(translated=True)
     model.train_and_test_on_same_language(translated=False)
     model.train_on_all_languages_test_on_one(translated=True)
