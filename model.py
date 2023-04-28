@@ -144,19 +144,19 @@ def create_model(sentence_length: int, num_classes: int = 2, hidden_size: int = 
     model.add(MaxPooling1D(pool_size=2))
     model.add(Conv1D(256, kernel_size=3, activation='relu'))
     model.add(GlobalMaxPooling1D())
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.1))
     model.add(Dense(128, activation='relu'))
     model.add(Dense(num_classes, activation='softmax'))
     return model
 
-def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, epsilon=0, amsgrad=False):
+def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, epsilon=0, amsgrad=False, clipnorm=1.0):
     # sgd is worse than adam
     return tf.keras.optimizers.Adam(learning_rate=lr, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon, amsgrad=amsgrad,
-                                    weight_decay=weight_decay)
+                                         weight_decay=weight_decay, clipnorm=clipnorm)
 
 
-def get_classification_model(learning_rate: float, sentence_length: int):
-    optimizer = create_adam_optimizer(lr=learning_rate)
+def get_classification_model(learning_rate: float, sentence_length: int, clipnorm: float = 1.0):
+    optimizer = create_adam_optimizer(lr=learning_rate, clipnorm=clipnorm)
     classification_model = create_model(sentence_length=sentence_length)
 
     classification_model.compile(
