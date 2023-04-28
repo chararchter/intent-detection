@@ -4,13 +4,6 @@ from transformers import pipeline
 
 from model import read_file
 
-MODEL_LV = ".\opus-mt-tc-big-lv-en"
-MODEL_LT = ".\opus-mt-tc-big-lt-en"
-
-CHATBOT = "chatbot"
-WEBAPPS = "webapps"
-UBUNTU = "askubuntu"
-
 
 def get_source_text(dataset_type: str, source_language: str, dataset_name: str) -> List[str]:
     """ Wrapper for get_data that provides file path.
@@ -65,8 +58,19 @@ def translate_to_english(dataset: List[str], model_name: str, source_language: s
     write_to_file(source_language, dataset_type, translated_text)
 
 
-lv_train = get_source_text("train", "lv", CHATBOT)
-print(lv_train)
-translate_to_file(
-    source_language="lv", dataset_type="train", dataset_name=CHATBOT, dataset=lv_train, model_name=MODEL_LV
-)
+model = dict()
+model = {
+    "lv": ".\opus-mt-tc-big-lv-en",
+    "ru": ".\opus-mt-ru-en",
+    "et": ".\opus-mt-tc-big-et-en",
+    "lt": ".\opus-mt-tc-big-lt-en",
+}
+
+for language, model_name in model.items():
+    for dataset_name in ["chatbot", "webapps", "askubuntu"]:
+        for dataset_type in ["test", "train"]:
+            dataset = get_source_text(dataset_type, language, dataset_name)
+            translate_to_file(
+                source_language=language, dataset_type=dataset_type, dataset_name=dataset_name, dataset=dataset,
+                model_name=model_name
+            )

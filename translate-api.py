@@ -11,13 +11,6 @@ API_URL_RU = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-r
 API_URL_ET = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-tc-big-et-en"
 API_URL_LT = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-tc-big-lt-en"
 
-CHATBOT = "chatbot"
-WEBAPPS = "webapps"
-UBUNTU = "askubuntu"
-
-TEST = "test"
-TRAIN = "train"
-
 headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
 
@@ -72,63 +65,29 @@ def translate(dataset: List[str], api_url: str) -> List[str]:
     return array
 
 
+def read_and_translate(source_language: str, dataset_name: str, dataset_type: str, api_url: str):
+    dataset = get_source_text(dataset_type, source_language, dataset_name)
+    print(dataset)
+    translate_to_file(
+        source_language=source_language,
+        dataset_type=dataset_type,
+        dataset_name=dataset_name,
+        dataset=dataset,
+        api_url=api_url
+    )
 
-lv_test = get_source_text(TEST, "lv", CHATBOT)
-ru_test = get_source_text(TEST, "ru", CHATBOT)
-et_test = get_source_text(TEST, "et", CHATBOT)
-lt_test = get_source_text(TEST, "lt", CHATBOT)
 
-lv_train = get_source_text(TRAIN, "lv", CHATBOT)
-ru_train = get_source_text(TRAIN, "ru", CHATBOT)
-et_train = get_source_text(TRAIN, "et", CHATBOT)
-lt_train = get_source_text(TRAIN, "lt", CHATBOT)
+api = dict()
+api = {
+    "lv": API_URL_LV,
+    "ru": API_URL_RU,
+    "et": API_URL_ET,
+    "lt": API_URL_LT,
+}
 
-translate_to_file(source_language="lv", dataset_type=TEST, dataset_name=CHATBOT, ataset=lv_test, api_url=API_URL_LV)
-translate_to_file(source_language="lv", dataset_type=TRAIN, dataset_name=CHATBOT, dataset=lv_train,
-                  api_url=API_URL_LV)
-
-translate_to_file(source_language="ru", dataset_type=TEST, dataset_name=CHATBOT, dataset=ru_test, api_url=API_URL_RU)
-translate_to_file(source_language="ru", dataset_type=TRAIN, dataset_name=CHATBOT, dataset=ru_train,
-                  api_url=API_URL_RU)
-
-translate_to_file(source_language="et", dataset_type=TEST, dataset_name=CHATBOT, dataset=et_test, api_url=API_URL_ET)
-translate_to_file(source_language="et", dataset_type=TRAIN, dataset_name=CHATBOT, dataset=et_train,
-                  api_url=API_URL_ET)
-
-translate_to_file(source_language="lt", dataset_type=TEST, dataset_name=CHATBOT, dataset=lt_test, api_url=API_URL_LT)
-translate_to_file(source_language="lt", dataset_type=TRAIN, dataset_name=CHATBOT, dataset=lt_train,
-                  api_url=API_URL_LT)
-
-lv_test = get_source_text(TEST, "lv", WEBAPPS)
-print(lv_test)
-translate_to_file(source_language="lv", dataset_type=TEST, dataset_name=WEBAPPS, dataset=lv_test, api_url=API_URL_LV)
-
-lv_train = get_source_text(TRAIN, "lv", WEBAPPS)
-print(lv_train)
-translate_to_file(source_language="lv", dataset_type=TRAIN, dataset_name=WEBAPPS, dataset=lv_train,
-                  api_url=API_URL_LV)
-
-ru_test = get_source_text(TEST, "ru", WEBAPPS)
-print(ru_test)
-translate_to_file(source_language="ru", dataset_type=TEST, dataset_name=WEBAPPS, dataset=ru_test, api_url=API_URL_RU)
-
-ru_train = get_source_text(TRAIN, "ru", WEBAPPS)
-print(ru_train)
-translate_to_file(source_language="ru", dataset_type=TRAIN, dataset_name=WEBAPPS, dataset=ru_train,
-                  api_url=API_URL_RU)
-
-et_test = get_source_text(TEST, "et", UBUNTU)
-print(et_test)
-translate_to_file(source_language="et", dataset_type=TEST, dataset_name=UBUNTU, dataset=et_test, api_url=API_URL_ET)
-
-et_train = get_source_text(TRAIN, "et", UBUNTU)
-print(et_train)
-translate_to_file(source_language="et", dataset_type=TRAIN, dataset_name=UBUNTU, dataset=et_train, api_url=API_URL_ET)
-
-lt_test = get_source_text(TEST, "lt", UBUNTU)
-print(lt_test)
-translate_to_file(source_language="lt", dataset_type=TEST, dataset_name=UBUNTU, dataset=lt_test, api_url=API_URL_LT)
-
-lt_train = get_source_text(TRAIN, "lt", UBUNTU)
-print(lt_train)
-translate_to_file(source_language="lt", dataset_type=TRAIN, dataset_name=UBUNTU, dataset=lt_train, api_url=API_URL_LT)
+for language, api_url in api.items():
+    for dataset_name in ["chatbot", "webapps", "askubuntu"]:
+        for dataset_type in ["test", "train"]:
+            read_and_translate(
+                source_language=language, dataset_name=dataset_name, dataset_type=dataset_type, api_url=api_url
+            )
