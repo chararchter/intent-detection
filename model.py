@@ -101,7 +101,7 @@ def split_validation(datasets: dict, data: dict) -> dict:
     return data
 
 
-def plot_performance(training_data, validation_data, dataset: str, x_label: str = 'accuracy'):
+def plot_performance(training_data, validation_data, broad_dataset: str, dataset: str, x_label: str = 'accuracy'):
     plt.plot(training_data, label='training')
     plt.plot(validation_data, label='validation')
     ax = plt.gca()
@@ -109,22 +109,22 @@ def plot_performance(training_data, validation_data, dataset: str, x_label: str 
     ax.set_ylabel(x_label)
     plt.title(f"{dataset} model {x_label}")
     plt.legend(loc="center")
-    plt.savefig(f"graphs/{dataset}-{x_label}.png")
+    plt.savefig(f"graphs/{broad_dataset}_{dataset}-{x_label}.png")
     plt.show()
 
 
 def create_model(sentence_length: int, num_classes: int = 2, hidden_size: int = 768):
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
-    model.add(Dense(32, activation='relu'))
+    model.add(Dense(16, activation='relu'))
+    model.add(Conv1D(32, kernel_size=3, activation='relu'))
+    model.add(MaxPooling1D(pool_size=2))
     model.add(Conv1D(64, kernel_size=3, activation='relu'))
     model.add(MaxPooling1D(pool_size=2))
     model.add(Conv1D(128, kernel_size=3, activation='relu'))
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Conv1D(256, kernel_size=3, activation='relu'))
     model.add(GlobalMaxPooling1D())
     model.add(Dropout(0.1))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(64, activation='relu'))
     model.add(Dense(num_classes, activation='softmax'))
     return model
 
@@ -148,7 +148,7 @@ def get_classification_model(learning_rate: float, sentence_length: int,  num_cl
 
 
 def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int,
-             model_name: str, num_classes: int = 2):
+             model_name: str, broad_dataset: str, num_classes: int = 2):
     train_data = data[f"train_{lang}"]
     # TODO: stack attributes in different levels: test/train, language and machine translated yes/no
     # t = data["train"][lang][[identifier]]
@@ -174,6 +174,7 @@ def training(data, lang: str, learning_rate: float, sentence_length: int, batch_
     plot_performance(
         history.history['accuracy'],
         history.history['val_accuracy'],
+        broad_dataset=broad_dataset,
         dataset=f"{model_name}_{lang}",
         x_label='accuracy'
     )
@@ -181,6 +182,7 @@ def training(data, lang: str, learning_rate: float, sentence_length: int, batch_
     plot_performance(
         history.history['loss'],
         history.history['val_loss'],
+        broad_dataset=broad_dataset,
         dataset=f"{model_name}_{lang}",
         x_label='loss'
     )
