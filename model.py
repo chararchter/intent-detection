@@ -2,10 +2,8 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from keras import Input
 from keras.layers import Dense, Conv1D, Dropout, GlobalMaxPooling1D, MaxPooling1D
 from keras.models import Sequential
-from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 from transformers import BertTokenizer, TFBertModel, AutoTokenizer, TFAutoModel
 
@@ -114,26 +112,6 @@ def plot_performance(training_data, validation_data, dataset: str, x_label: str 
     plt.show()
 
 
-# def create_model(sentence_length: int, units: int = 32, hidden_size: int = 768):
-#     kernel_size = 3
-#     kernel_regularizer_coef = 0.01
-#     model = Sequential()
-#     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
-#     model.add(Dense(units, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
-#     print(model.summary())
-#     model.add(Conv1D(filters=units, kernel_size=kernel_size, padding="valid", activation="softmax",
-#                      kernel_regularizer=l2(kernel_regularizer_coef)))
-#     model.add(GlobalMaxPooling1D())
-#     print(model.summary())
-#     model.add(Dropout(0.05))
-#     print(model.summary())
-#     # 2 because two classes
-#     model.add(Dense(2, activation='softmax', kernel_regularizer=l2(kernel_regularizer_coef)))
-#     # squeeze the output to remove dimension with size 1
-#     # model.add(tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1)))
-#     print(model.summary())
-#     return model
-
 def create_model(sentence_length: int, num_classes: int = 2, hidden_size: int = 768):
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
@@ -149,10 +127,11 @@ def create_model(sentence_length: int, num_classes: int = 2, hidden_size: int = 
     model.add(Dense(num_classes, activation='softmax'))
     return model
 
+
 def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, epsilon=0, amsgrad=False, clipnorm=1.0):
     # sgd is worse than adam
     return tf.keras.optimizers.Adam(learning_rate=lr, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon, amsgrad=amsgrad,
-                                         weight_decay=weight_decay, clipnorm=clipnorm)
+                                    weight_decay=weight_decay, clipnorm=clipnorm)
 
 
 def get_classification_model(learning_rate: float, sentence_length: int, clipnorm: float = 1.0):
@@ -167,7 +146,8 @@ def get_classification_model(learning_rate: float, sentence_length: int, clipnor
     return classification_model
 
 
-def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int, model_name: str):
+def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int,
+             model_name: str):
     train_data = data[f"train_{lang}"]
     # TODO: stack attributes in different levels: test/train, language and machine translated yes/no
     # t = data["train"][lang][[identifier]]
