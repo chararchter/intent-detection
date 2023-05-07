@@ -28,7 +28,7 @@ def read_file(path: str) -> List[str]:
         return array
 
 
-def get_source_text(dataset_type: str, source_language: str = None, labels: bool = False,
+def get_source_text(dataset_type: str, dataset: str, source_language: str = None, labels: bool = False,
                     machine_translated: bool = False) -> List[str]:
     """ Wrapper for read_file that provides file path.
     Prompts in all languages are in the same order, therefore they use the same label files. So please be careful
@@ -37,33 +37,34 @@ def get_source_text(dataset_type: str, source_language: str = None, labels: bool
     prompts: read_source_text("test", "et", False)
     labels: read_source_text("test")
     :param dataset_type: "test" or "train"
+    :param dataset: "chatbot", "askubuntu" or "webapps"
     :param source_language: "lv", "ru", "et", "lt"
     :param labels: does the file being read contain labels
+    :param machine_translated: has the data been machine translated to English?
     :return: array of file contents for specified file
     """
     if labels:
-        return read_file(f"NLU-datasets\chatbot\chatbot_{dataset_type}_ans.txt")
+        return read_file(f"NLU-datasets\{dataset}\{dataset}_{dataset_type}_ans.txt")
     elif machine_translated:
-        return read_file(f"machine-translated-datasets\{source_language}_{dataset_type}.txt")
+        return read_file(f"machine-translated-datasets\{dataset}_{source_language}_{dataset_type}.txt")
     else:
-        return read_file(f"NLU-datasets\chatbot\{source_language}\chatbot_{dataset_type}_q.txt")
+        return read_file(f"NLU-datasets\{dataset}\{source_language}\{dataset}_{dataset_type}_q.txt")
 
 
-def get_dataset(datasets: dict, need_labels: bool = True) -> dict:
+def get_dataset(datasets: dict, dataset: str = "chatbot") -> dict:
     """
-    :param datasets:
-    :param need_labels: redundant argument, i'm gonna remove it later
+    :param datasets: test/train key and languages as values
+    :param dataset: "chatbot", "askubuntu" or "webapps"
     :return: dictionary with dataset type, language and optional labels and '_en' as keys and list of input data as values
     """
     results = dict()
     for key, value in datasets.items():
-        if need_labels:
-            results.update({f"{key}_labels": get_source_text(dataset_type=key, labels=True)})
+        results.update({f"{key}_labels": get_source_text(dataset_type=key, dataset=dataset, labels=True)})
         for lang in value:
-            results.update({f"{key}_{lang}": get_source_text(dataset_type=key, source_language=lang)})
+            results.update({f"{key}_{lang}": get_source_text(dataset_type=key, dataset=dataset, source_language=lang)})
             if lang != "en":
-                results.update({f"{key}_{lang}_en": get_source_text(dataset_type=key, source_language=lang,
-                                                                    machine_translated=True)})
+                results.update({f"{key}_{lang}_en": get_source_text(dataset_type=key, dataset=dataset,
+                                                                    source_language=lang, machine_translated=True)})
     return results
 
 

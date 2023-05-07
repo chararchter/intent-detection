@@ -12,7 +12,7 @@ from model import training, \
 
 class MyModel:
     def __init__(self, batch_size: int, learning_rate: float, epochs: int, sentence_length: int, model_name: str,
-                 num_classes: int, languages=("en", "lv", "ru", "et", "lt")):
+                 num_classes: int, dataset: str = "chatbot", languages=("en", "lv", "ru", "et", "lt")):
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.epochs = epochs
@@ -22,6 +22,7 @@ class MyModel:
         self.datasets = dict()
         self.results = pd.DataFrame()
         self.num_classes = num_classes
+        self.dataset = dataset
         self.hidden_size = 768
         # allows to run model one language at the time
         self.languages = [languages] if isinstance(languages, str) else languages
@@ -132,12 +133,15 @@ class MyModel:
         """ Initialize data dictionary with values read from files
         """
         for key, value in self.datasets.items():
-            self.data.update({f"{key}_labels": get_source_text(dataset_type=key, labels=True)})
+            self.data.update({f"{key}_labels": get_source_text(dataset_type=key, dataset=self.dataset, labels=True)})
             for lang in value:
-                self.data.update({f"{key}_{lang}": get_source_text(dataset_type=key, source_language=lang)})
+                self.data.update(
+                    {f"{key}_{lang}": get_source_text(dataset_type=key, dataset=self.dataset, source_language=lang)}
+                )
                 if lang != "en":
                     self.data.update({f"{key}_{lang}_en": get_source_text(
                         dataset_type=key,
+                        dataset=self.dataset,
                         source_language=lang,
                         machine_translated=True
                     )})
@@ -207,16 +211,6 @@ if __name__ == "__main__":
     # model.train_on_all_languages_test_on_one(translated=False)
     # model.train_on_english_test_on_non_english(translated=True)
     # model.train_on_english_test_on_non_english(translated=False)
-
-    model = MyModel(batch_size=24, learning_rate=0.00001, epochs=100, sentence_length=20,
-                    model_name="bert-base-multilingual-cased", num_classes=2)
-    model.train_and_test_on_same_language(translated=True)
-    # model.train_and_test_on_same_language(translated=False)
-    # model.train_on_all_languages_test_on_one(translated=True)
-    # model.train_on_all_languages_test_on_one(translated=False)
-    # model.train_on_english_test_on_non_english(translated=True)
-    # model.train_on_english_test_on_non_english(translated=False)
-
 
     model = MyModel(batch_size=24, learning_rate=0.00001, epochs=100, sentence_length=20,
                     model_name="bert-base-multilingual-cased", num_classes=2)
