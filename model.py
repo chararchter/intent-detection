@@ -134,9 +134,9 @@ def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, ep
                                     weight_decay=weight_decay, clipnorm=clipnorm)
 
 
-def get_classification_model(learning_rate: float, sentence_length: int, clipnorm: float = 1.0):
+def get_classification_model(learning_rate: float, sentence_length: int,  num_classes: int, clipnorm: float = 1.0):
     optimizer = create_adam_optimizer(lr=learning_rate, clipnorm=clipnorm)
-    classification_model = create_model(sentence_length=sentence_length)
+    classification_model = create_model(sentence_length=sentence_length, num_classes=num_classes)
 
     classification_model.compile(
         optimizer=optimizer,
@@ -147,7 +147,7 @@ def get_classification_model(learning_rate: float, sentence_length: int, clipnor
 
 
 def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int,
-             model_name: str):
+             model_name: str, num_classes: int = 2):
     train_data = data[f"train_{lang}"]
     # TODO: stack attributes in different levels: test/train, language and machine translated yes/no
     # t = data["train"][lang][[identifier]]
@@ -160,7 +160,7 @@ def training(data, lang: str, learning_rate: float, sentence_length: int, batch_
     print(f"train_labels.shape {train_labels.shape}")  # (num_samples, num_classes) (80, 2)
     print(f"validation_labels.shape {validation_labels.shape}")  # (num_samples, num_classes) (20, 2)
 
-    classification_model = get_classification_model(learning_rate, sentence_length)
+    classification_model = get_classification_model(learning_rate, sentence_length, num_classes)
 
     history = classification_model.fit(
         train_data,

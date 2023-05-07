@@ -12,7 +12,7 @@ from model import training, \
 
 class MyModel:
     def __init__(self, batch_size: int, learning_rate: float, epochs: int, sentence_length: int, model_name: str,
-                 languages=("en", "lv", "ru", "et", "lt")):
+                 num_classes: int, languages=("en", "lv", "ru", "et", "lt")):
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.epochs = epochs
@@ -21,7 +21,7 @@ class MyModel:
         self.data = dict()
         self.datasets = dict()
         self.results = pd.DataFrame()
-        self.units = 2
+        self.num_classes = num_classes
         self.hidden_size = 768
         # allows to run model one language at the time
         self.languages = [languages] if isinstance(languages, str) else languages
@@ -95,7 +95,7 @@ class MyModel:
         temp_languages, temp_results, col_name, discard = self.is_translated(translated)
         for language in temp_languages:
             classification = training(self.data, language, self.learning_rate, self.sentence_length, self.batch_size,
-                                      self.epochs, self.model_name)
+                                      self.epochs, self.model_name, self.num_classes)
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
         self.results[f"1_{col_name}"] = temp_results
         self.results.to_csv(self.csv_file_name, index=False)
@@ -107,7 +107,7 @@ class MyModel:
         """
         temp_languages, temp_results, col_name, identifier = self.is_translated(translated)
         classification = training(self.data, f"all{identifier}", self.learning_rate, self.sentence_length,
-                                  self.batch_size, self.epochs, self.model_name)
+                                  self.batch_size, self.epochs, self.model_name, self.num_classes)
 
         for language in temp_languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
@@ -121,7 +121,7 @@ class MyModel:
         """
         temp_languages, temp_results, col_name, discard = self.is_translated(translated)
         classification = training(self.data, "en", self.learning_rate, self.sentence_length,
-                                  self.batch_size, self.epochs, self.model_name)
+                                  self.batch_size, self.epochs, self.model_name, self.num_classes)
 
         for language in temp_languages:
             temp_results.append(test_classification_model(classification, self.data, language, self.batch_size))
@@ -151,6 +151,7 @@ class MyModel:
                 # Encode string labels to integer labels
                 self.data[key] = label_encoder.fit_transform(self.data[key])
                 # Convert integer labels to categorical data
+                print(f"Num classes: {len(label_encoder.classes_)}")
                 self.data[key] = to_categorical(self.data[key], num_classes=len(label_encoder.classes_))
 
     def split_validation(self):
@@ -208,7 +209,17 @@ if __name__ == "__main__":
     # model.train_on_english_test_on_non_english(translated=False)
 
     model = MyModel(batch_size=24, learning_rate=0.00001, epochs=100, sentence_length=20,
-                    model_name="bert-base-multilingual-cased")
+                    model_name="bert-base-multilingual-cased", num_classes=2)
+    model.train_and_test_on_same_language(translated=True)
+    # model.train_and_test_on_same_language(translated=False)
+    # model.train_on_all_languages_test_on_one(translated=True)
+    # model.train_on_all_languages_test_on_one(translated=False)
+    # model.train_on_english_test_on_non_english(translated=True)
+    # model.train_on_english_test_on_non_english(translated=False)
+
+
+    model = MyModel(batch_size=24, learning_rate=0.00001, epochs=100, sentence_length=20,
+                    model_name="bert-base-multilingual-cased", num_classes=2)
     model.train_and_test_on_same_language(translated=True)
     # model.train_and_test_on_same_language(translated=False)
     # model.train_on_all_languages_test_on_one(translated=True)
