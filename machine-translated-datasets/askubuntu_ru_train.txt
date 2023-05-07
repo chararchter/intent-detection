@@ -1,0 +1,53 @@
+How do I record my screen?
+How can I single out or annotate PDF files?
+Whether to update from 12.04 LTS to 13.04
+Update to 12.04 64 bits
+How do you update Ubuntu 14.04.1 to 14.04.2?
+Update from Ubuntu 14.04 to 15.04
+How do you update from ubuntu 15.04 to 15:10?
+Update from 12.04 to 12.10 using the loading disc
+How do you update from 11:10 to 12:04 when you have a problem?
+Update from 11.04 to 12.04 with LiveCD
+How do you update Ubuntu 9:10 to 12:10 via terminal?
+How do you update Ubuntu 10.10 until 11.04?
+No matter what I do, Ubuntu 15.04 doesn't recognize HP LaserJet 1020.
+How do you set the printer / HP scanner to the ubuntu?
+How do you set up a wireless HP C4140 printer?
+How do you set the wireless seal from an usb-connected printer on Ubuntu Silver 12.10?
+How to install the Pantum 2502W laser printer on Ubuntu
+Set up Canon MP560 Ubuntu 15.04
+How to install the network printer Brother MFC-5890CN?
+How do you install the drivers for Konica Minolta 200?
+How do you install printer drivers / Panasonic MB1900CX All-in-One?
+How do I install the Canon LBP2900B printer at 14.04 LTS? I tried the LBP2900 method, but it didn't work.
+Any command line calculator for Ubuntu?
+Extracting built-in images from PDF
+What's to be used for the quick cut of audio / video
+Torrent client for the command line?
+MySQL GUI tools
+What text editors are available to developers for Ubuntu?
+What tools are available for screen shots?
+What software can I use to edit PDF files?
+Is there an easy tool for rapid image cutting?
+Which IRC clients are available?
+What new games are available to Ubuntu in 2011?
+UPNP/DLNA (client) recommendations?
+What software for building science charts is available?
+Can you recommend a password generator?
+What tools do you use to monitor the web server?
+Is MongoDB GUI a good client?
+The password control apps?
+Is there an app for reading mobi files?
+turn off without further questions
+How do you turn off the computer when the users entered the system?
+What is the appropriate final way to stop?
+How can I automatically shut down the system in a certain time?
+A hot shutter from the system entrance screen?
+How do you complete the work of the computer after Xsession?
+How do you turn off a PC with a keyboard?
+How can I turn on a lot of words?
+Are there any combinations of keys to turn off?
+Completion of work after a certain period of time
+The problem of completing work at Ubuntu on 16.04
+How can we correct the problem of completion?
+What graphic utility can be used to automatically deactivate Ubuntu?

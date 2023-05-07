@@ -1,0 +1,53 @@
+How do I record a screen?
+How can I exclude or comment on PDF?
+Is it worth upgrading from 12.04 LTS to 13.04
+Upgrade to 64-bit version 12.04
+How to upgrade Ubuntu from 14.04.1 to 14.04.2?
+Update from Ubuntu 14.04 to 15.04
+how to upgrade Ubuntu from 15.04 to 15.10?
+Upgrade from 12.04 to 12.10 using a startup disk
+How do I update from 11.10 to 12.04 when there is a problem?
+Upgrade from 11.04 to 12.04 with LiveCD
+How to upgrade Ubuntu 9.10 to 12.10 via Terminal?
+How to upgrade from Ubuntu 10.10 to 11.04?
+No matter what I do, but Ubuntu 15.04 does not recognize HP LaserJet 1020
+How to set up an HP printer/reader on Ubuntu?
+How to install a printer on the HP C4140 wireless network?
+How to configure wireless printing from a printer connected via USB, Ubuntu Server 12.10?
+How to Install Pantum 2502W Laser Printer on Ubuntu
+Install Canon MP560 on Ubuntu 15.04
+How do I install the Brother MFC-5890CN network printer?
+How to install Konica Minolta 200 drivers?
+How to install Panasonic MB1900CX All-in-One printer or scanner drivers?
+How to install Canon LBP2900B printer on LTS 14.04? I tried the method for LBP2900, but it didn't work
+Any Ubuntu command line calculator?
+Extracting embedded images from PDF
+What to use if you want to quickly cut the audio/video
+Torrent client for command line?
+MySQL GUI Tools
+What developer text editors are available on Ubuntu?
+What screen photo tools are available?
+What programs can I use to edit PDF files?
+Is there a simple tool for quickly cropping photos?
+What are potential IRC clients?
+What new games are available on Ubuntu in 2011?
+UPNP / DLNA (customer) player recommendations?
+What are the possible scientific graphics software?
+Can you recommend a password generator?
+What tools do you use to monitor a web server?
+What is a good MongoDB GUI client?
+Password Management Programs?
+Is there an application for reading Mobi files?
+close without further question
+How do I turn off the computer when logged into the system?
+What is the right terminal way to disable?
+How can I automatically shut down the system after a certain amount of time?
+Hot key off from login screen?
+How do I shut down my computer after Xsession's graduation?
+How can a computer be turned off using a keyboard?
+How can I turn off multilinguality?
+Are there any keyboard shortcuts for shutdown?
+Shutdown after a certain amount of time
+Shutdown problem in Ubuntu 16.04
+How to solve the shutdown problem?
+What graphical tool can I use for auto-closing Ubuntu?

@@ -1,0 +1,109 @@
+What software can I use to view EPUB documents?
+Which PDF revision program would you recommend?
+What IDEs are available on Ubuntu?
+What is the best Mind Mapping software?
+Software to read QR code?
+PDF to Word Conversion Software?
+Is there software that can view .dwg files?
+What good PHP editors?
+Is there support software to customize the screen gamut/brightness/contrast?
+Please recommend hex editors for command line
+Is there network topology mapping software for Ubuntu?
+Is there an Ubuntu tool such as a wifi parser?
+A tool for recovering deleted data from a flash drive
+What is a simple color picker for GNOME?
+Any program that would remind me to take regular breaks during work?
+What are good ASCII art generators?
+What are the good binary GUI review tools/editors?
+What is the best PDF metadata viewer on Ubuntu?
+Is there a Linux file manager, properly in the tree drop-down view? (e.g. OS X Finder)
+Which program would you recommend watching TV (DVB)?
+What is the best HDR software?
+What do you use to edit Microsoft Word documents (docx)?
+What's the best Wireframing tool?
+Is there any software that will make facial recognition in the photos?
+Apps to change iTunes syncing for an iPod device?
+Is there an SSH connection manager?
+A simple alternative to the gnome-system-monitor program?
+Software to create a video demonstration?
+Is there any Ubuntu project management software like Microsoft Project?
+Is there any "ext4" recovery software?
+What is the available blog editing software?
+Can you recommend a good modern GUI download manager (wget wrapper?)
+Is there any program for matching obscure lines that gives the result of the match?
+Are there hardware diagnostic tools?
+Regex editor's recommendation?
+Is there document scanning and archiving software?
+Keyboard shortcuts for shutdown?
+My system doesn't shut down
+How to remove slow-off glitches?
+How can I turn off a computer when a certain process ends?
+Ubuntu closes the application
+What does my computer do by clicking "Disable"?
+How do I close without an approval line?
+Not working when pressing shutdown
+what's the right way to disable ubuntu using the command line?
+How can I close an unclaimed administrator password?
+shut down in the right way if no one is using the computer
+Which command to open the shutdown dialog?
+How to close Ubuntu using the keyboard?
+off daily at 5:30 a.m.
+Update 11.10 to 12.04
+How do I update the last version of 16.04 if I am using the beta version?
+Doubts about the update 15.04 (is it normal and inevitable?)
+Is it possible to upgrade from 13.10 to 14.04 offline?
+Update from Ubuntu 12.04 to 13.10
+Ubuntu update failed
+Update 12.04 to 13.10 (unanswered questions)
+Update to Ubuntu 13.10 from Ubuntu 13.04
+Is it recommended to upgrade to Lubuntu 15.04?
+Forced update from 12.10 to 13.04
+How to partially update Ubuntu 11.04 to Ubuntu 11.10?
+Problem update Ubuntu 9.10
+Do I need to upgrade to 15.10 from 14.04?
+How to upgrade Xubuntu 11.10 to Xubuntu 12.04 LTS?
+Why did the update from 11.10 to 12.04 ruin my system?
+Problem update from 12.04 to 14.04
+Problems updating Ubuntu from 12.10 to 13.04
+Upgrade from 12.04 to 12.10 without losing files?
+Really Old Ubuntu 6.06 - How to Upgrade
+Do I need to remove 10.04 before I can update to 12.04?
+Do I have to reinstall everything to upgrade from 13.10 to 14.10?
+Update Manager: Update to 15.04 instead of 16.04
+Update 16.04 to 16.04.1
+Ubuntu Server Update 9.10 to 10.04
+How do I update to 13.04 from the beta version?
+How to Upgrade from 12.10 to 14.04
+Update from 10.10 to 11.04, how much space is needed?
+Do I have to backup my 12.04 system to upgrade to 12.04.1?
+Cannot be updated from 12.04LTS to 14.04
+Upgrade from 10.10 to 11.04
+How to Upgrade from Terminal 14.04 LTS or 15.10 to 16.04
+How to Upgrade from 16.04 LTS to 16.04.1 LTS
+Update from 10.04 to 11.10
+How to correctly upgrade to Ubuntu 14.04 last version from 14.04 Beta?
+Is there an update procedure from 12.04 LTS to 14.04 LTS
+Upgrade from 9.10 to 11.04
+How do I upgrade Ubuntu from 12.04 to 14.04 if I have a double boot with Windows 7?
+The Wubi device /dev/loop0 is full. How do I get more space?
+Can I compile packages using 12.04 with gcc for 10.04?
+Removes recently used items in version 12.04
+Update from 11.04 (32-bit) to 12.04 (64-bit)
+What is the difference between the command rm and the delete button?
+How does Unity show the information of a specific launcher?
+How to submit user permission to read and write / dev / sdax? What is syntax?
+Security improvements prevent installation / dev / sdb1
+How to display grub when restarting?
+How to install Lexmark z600 series printer?
+Can't set HP All in one DJ3630
+How to add a network printer on Ubuntu 15.10?
+Could not install printer driver epson l210
+How to Install a Dell 2150cdn Printer
+Epson XP-424 Wireless Printer Deployment
+Installing the EPSON L355 on Ubuntu 14.04
+How to install HP F4280 printer?
+How to install Brother DCP-8110DN laser printer on Ubuntu?
+How to install Canon MF8040Cn printer on Ubuntu 12.04
+How to install Canon MF8000C printer on Ubuntu 15.10?
+How to install Canon LBP330 at 16.04 Lts
+Install the printer "Lexmark X4690" (Ubuntu 12.04)

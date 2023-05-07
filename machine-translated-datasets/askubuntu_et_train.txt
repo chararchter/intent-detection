@@ -1,0 +1,53 @@
+How to save the display?
+How to highlight or mark PDFs?
+Is it worth upgrading to LTS 12.04 version 13.04
+64-bit upgrade to 12.04
+How do I upgrade from Ubuntu 14.04.1 to version 14.04.2?
+Upgrade from Ubuntu 14.04 to 15.04
+How to upgrade Ubuntu 15.04 to 15.10?
+Upgrade from version 12.04 to version 12.10 with boot disk
+How do I upgrade from version 11.10 to version 12.04 if you have a problem?
+Upgrade to 11.04 with 12.04 LiveCD
+How do I upgrade from Ubuntu 9.10 to 12.10?
+How to upgrade from Ubuntu 10.10 to 11.04?
+No matter what I do Ubuntu 15.04 will not recognize HP LaserJet 1020
+How to configure ubuntus HP printer/scanner?
+How do I wirelessly set up my HP C4140 printer?
+How to set up wireless printing in Ubuntu Server version 12.10 from a printer connected via usb?
+How to Install Ubuntu Pantum 2502W Laser Printer
+Installing the Canon MP560 in Ubuntu 15.04
+How to install Brother MFC-5890CN network printer?
+How to install drivers for Konica Minolta 200?
+How to install drivers for Panasonic MB1900CX All-in-One printer/scanner?
+How to install Canon LBP2900B printer in version 14.04 LTS? I tried the LBP2900 method, but it did not work
+Is there a command-line calculator for Ubuntu?
+Extract embedded images from PDF
+What to use to quickly crop audio/video?
+A torrent client for the command line?
+MySQL GUI Tools
+What developer text editors are available for Ubuntu?
+What screen capture tools are available?
+What programs can be used to edit PDF files?
+Is there a small-scale tool for quickly cropping images?
+Which IRC customers are available?
+What new games will be available for Ubuntu in 2011?
+Recommendations from the UPnP/DLNA (Client) Player?
+What kind of scientific drawing software is available?
+Can you recommend a password generator?
+What tools do you use to monitor the web server?
+What is a good MongoDB GUI client?
+Password management applications?
+Are there any apps to read mobi files?
+Turn off without additional question
+How do I turn off my computer when users are signed in?
+What’s the right way to turn off the terminal?
+How can the system be automatically turned off after a certain time?
+Shortcut to turn off the login screen?
+How do I turn off my computer after the X session?
+How can a computer be closed using a keyboard?
+How to allow closure of verbatimity?
+Are there any shortcuts to turn off?
+Turn off after a certain time
+Ubuntu 16.04 Closing Problem
+How to solve the closing problem?
+Which graphical utility can be used to auto-close Ubuntu?

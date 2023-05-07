@@ -1,0 +1,53 @@
+How to record the screen?
+How can I highlight or annotate PDF files?
+Is it worth it to upgrade from 12.04 LTS to 13.04
+Upgrade to 12.04 64-bit
+How to Upgrade Ubuntu 14.04.1 to 14.04.2?
+Upgrade from Ubuntu 14.04 to 15.04
+how to upgrade from ubuntu 15.04 to 15.10?
+Upgridot 12.04. to 12.10. using startup disk
+How to upgrade from 11.10 to 12.04 when there is a problem?
+Update on 11.04. to 12.04. with LiveCD
+How to Upgrade Ubuntu 9.10 to 12.10 Using Terminal?
+How to upgrade from Ubuntu 10.10 to 11.04?
+Whatever I do, Ubuntu 15.04 doesn’t recognize HP LaserJet 1020
+How to set up HP printer/scanner to ubuntu?
+How do I set up an HP C4140 printer wirelessly?
+How to set up wireless printing from a printer connected to Ubuntu Server 12.10 via usb.
+How To Install Pantum 2502W Laser Printer On Ubuntu
+Install Canon MP560 Ubuntu 15.04
+How do I install Brother MFC-5890CN network printer?
+How to install drivers Konica Minolta 200?
+How to install drivers for Panasonic MB1900CX All-in-One printer/scanner?
+How to install Canon LBP2900B printer 14.04 LTS? I tried the method for LBP2900, but it didn't work.
+What command line calculator for Ubuntu?
+Extracting Embedded Images from PDF
+What to use to quickly cut audio/video
+A Torent client for the command line?
+MySQL GUI Tools
+What developer text editors are available on Ubuntu?
+What screenshot tools are available?
+Which programs can be used to edit PDF files?
+Is there an easy tool for quick cropping images?
+What IRC clients are available?
+What new games are available on Ubuntu in 2011?
+UPnP/DLNA (Client) Player Suggestions?
+What scientific charting software is available?
+Can you recommend a password generator?
+What tools do you use to monitor a web server?
+Is there a good MongoDB GUI client?
+Password management applications?
+Is there an application for reading mobi files?
+No additional questions asked
+How do I turn off my computer while users are logged in?
+What is the right final way to be excluded?
+How to automatically turn off the system after a certain period of time?
+Hot key to disable the system from the login screen
+How do I turn off my computer after Xsession has ended?
+How can I turn off my computer using my keyboard?
+How can you enable off verbosity?
+Are there any keyboard shortcuts to turn off?
+Exclusion after a certain period of time
+Shutdown Problem in Ubuntu 16.04
+How do I fix the shutdown problem?
+What graphical utility can be used for Ubuntu Auto Shutdown?
