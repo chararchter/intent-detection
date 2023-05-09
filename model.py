@@ -192,7 +192,7 @@ def training(data, lang: str, learning_rate: float, sentence_length: int, batch_
 
 def test_classification_model(model, data: dict, lang: str, batch_size: int) -> float:
     test_data = data[f"test_{lang}"]
-    test_labels = data[f"test_{lang}_labels"]
+    test_labels = data["test_labels"]
 
     test_loss, test_accuracy = model.evaluate(test_data, test_labels, batch_size=batch_size)
     print('Test Loss: {:.2f}'.format(test_loss))
