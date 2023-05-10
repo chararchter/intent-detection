@@ -116,15 +116,15 @@ def plot_performance(training_data, validation_data, broad_dataset: str, dataset
 def create_model(sentence_length: int, num_classes: int = 2, hidden_size: int = 768):
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
-    model.add(Dense(8, activation='relu'))
-    model.add(Conv1D(16, kernel_size=3, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Conv1D(128, kernel_size=3, activation='relu'))
     model.add(MaxPooling1D(pool_size=2))
-    model.add(Conv1D(32, kernel_size=3, activation='relu'))
+    model.add(Conv1D(256, kernel_size=3, activation='relu'))
     model.add(MaxPooling1D(pool_size=2))
-    model.add(Conv1D(64, kernel_size=3, activation='relu'))
+    model.add(Conv1D(512, kernel_size=3, activation='relu'))
     model.add(GlobalMaxPooling1D())
     model.add(Dropout(0.1))
-    model.add(Dense(32, activation='relu'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dense(num_classes, activation='softmax'))
     return model
 

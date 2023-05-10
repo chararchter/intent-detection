@@ -28,6 +28,8 @@ class MyModel:
         self.languages = [languages] if isinstance(languages, str) else languages
         self.non_eng_languages = list(set(self.languages) - {"en"})
         self.non_eng_languages = [language + "_en" for language in self.non_eng_languages]
+        # explicit better than implicit, making sure the order of languages is consistent across board
+        self.non_eng_languages = ['lv_en', 'ru_en', 'lt_en', 'et_en', 'lt_en']
         self.csv_file_name = f"{self.dataset}_{self.model_name}_results.csv"
 
         self.tokenizer, self.model = get_embeddings_tokenizer_model(self.model_name)
@@ -45,6 +47,7 @@ class MyModel:
     def init_results(self):
         self.results['hyperparameters'] = [self.model_name, self.batch_size, self.sentence_length, self.learning_rate,
                                            self.epochs]
+        self.results['languages'] = self.languages
 
     def init_data(self):
         self.get_dataset()
@@ -78,6 +81,8 @@ class MyModel:
                             ['train_en_labels_validation', 'train_lv_en_labels_validation',
                              'train_ru_en_labels_validation',
                              'train_et_en_labels_validation', 'train_lt_en_labels_validation'])
+
+        print(self.data)
 
     def is_translated(self, translated: bool = False) -> Tuple[list, list, str, str]:
         """ Return appropriate parameters based on whether the data has been machine translated to English
