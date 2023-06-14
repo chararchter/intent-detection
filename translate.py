@@ -2,18 +2,7 @@ from typing import List
 
 from transformers import pipeline
 
-from model import read_file
-
-
-def get_source_text(dataset_type: str, source_language: str, dataset_name: str) -> List[str]:
-    """ Wrapper for get_data that provides file path.
-
-    :param dataset_type: "test" or "train"
-    :param source_language: "lv", "ru", "et", "lt"
-    :param dataset_name: "chatbot", "askubuntu" or "webapps"
-    :return: array of file contents for specified file
-    """
-    return read_file(f"NLU-datasets\{dataset_name}\{source_language}\{dataset_name}_{dataset_type}_q.txt")
+from model import get_source_text
 
 
 def translate_to_file(dataset_type: str, source_language: str, dataset: List[str], dataset_name: str, model_name: str):
@@ -58,7 +47,6 @@ def translate_to_english(dataset: List[str], model_name: str, source_language: s
     write_to_file(source_language, dataset_type, translated_text)
 
 
-model = dict()
 model = {
     "lv": ".\opus-mt-tc-big-lv-en",
     "ru": ".\opus-mt-ru-en",
@@ -69,7 +57,7 @@ model = {
 for language, model_name in model.items():
     for dataset_name in ["chatbot", "webapps", "askubuntu"]:
         for dataset_type in ["test", "train"]:
-            dataset = get_source_text(dataset_type, language, dataset_name)
+            dataset = get_source_text(dataset_type, dataset_name, language)
             translate_to_file(
                 source_language=language, dataset_type=dataset_type, dataset_name=dataset_name, dataset=dataset,
                 model_name=model_name

@@ -3,7 +3,7 @@ from typing import List
 
 import requests
 
-from model import read_file
+from model import get_source_text
 from secret_api_token import API_TOKEN
 
 API_URL_LV = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-tc-big-lv-en"
@@ -18,17 +18,6 @@ def query(payload: str, api_url: str) -> dict:
     data = json.dumps(payload)
     response = requests.request("POST", api_url, headers=headers, data=data)
     return json.loads(response.content.decode("utf-8"))
-
-
-def get_source_text(dataset_type: str, source_language: str, dataset_name: str) -> List[str]:
-    """ Wrapper for get_data that provides file path.
-
-    :param dataset_type: "test" or "train"
-    :param source_language: "lv", "ru", "et", "lt"
-    :param dataset_name: "chatbot", "askubuntu" or "webapps"
-    :return: array of file contents for specified file
-    """
-    return read_file(f"NLU-datasets\{dataset_name}\{source_language}\{dataset_name}_{dataset_type}_q.txt")
 
 
 def translate_to_file(dataset_type: str, source_language: str, dataset_name: str, dataset: List[str], api_url: str):
@@ -58,7 +47,6 @@ def translate(dataset: List[str], api_url: str) -> List[str]:
     array = []
     for line in dataset:
         output = query(line, api_url)
-
         if "error" in output:
             raise ValueError("Model is currently loading or Service Unavailable, try again")
         array.append(output)
@@ -66,7 +54,7 @@ def translate(dataset: List[str], api_url: str) -> List[str]:
 
 
 def read_and_translate(source_language: str, dataset_name: str, dataset_type: str, api_url: str):
-    dataset = get_source_text(dataset_type, source_language, dataset_name)
+    dataset = get_source_text(dataset_type, dataset_name, source_language)
     print(dataset)
     translate_to_file(
         source_language=source_language,
@@ -77,7 +65,6 @@ def read_and_translate(source_language: str, dataset_name: str, dataset_type: st
     )
 
 
-api = dict()
 api = {
     "lv": API_URL_LV,
     "ru": API_URL_RU,
