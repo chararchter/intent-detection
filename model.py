@@ -11,9 +11,11 @@ from transformers import BertTokenizer, TFBertModel, AutoTokenizer, TFAutoModel
 def get_embeddings_tokenizer_model(model_name: str):
     model_name = f"./{model_name}"
     if "roberta" in model_name:
-        return AutoTokenizer.from_pretrained(model_name), TFAutoModel.from_pretrained(model_name)
+        return AutoTokenizer.from_pretrained(
+            model_name), TFAutoModel.from_pretrained(model_name)
     else:
-        return BertTokenizer.from_pretrained(model_name), TFBertModel.from_pretrained(model_name)
+        return BertTokenizer.from_pretrained(
+            model_name), TFBertModel.from_pretrained(model_name)
 
 
 def read_file(path: str) -> List[str]:
@@ -28,7 +30,8 @@ def read_file(path: str) -> List[str]:
         return array
 
 
-def get_source_text(dataset_type: str, dataset: str, source_language: str = None, labels: bool = False,
+def get_source_text(dataset_type: str, dataset: str,
+                    source_language: str = None, labels: bool = False,
                     machine_translated: bool = False) -> List[str]:
     """ Wrapper for read_file that provides file path.
     Prompts in all languages are in the same order, therefore they use the same label files. So please be careful
@@ -46,9 +49,11 @@ def get_source_text(dataset_type: str, dataset: str, source_language: str = None
     if labels:
         return read_file(f"NLU-datasets\{dataset}\{dataset}_{dataset_type}_ans.txt")
     elif machine_translated:
-        return read_file(f"machine-translated-datasets\{dataset}_{source_language}_{dataset_type}.txt")
+        return read_file(
+            f"machine-translated-datasets\{dataset}_{source_language}_{dataset_type}.txt")
     else:
-        return read_file(f"NLU-datasets\{dataset}\{source_language}\{dataset}_{dataset_type}_q.txt")
+        return read_file(
+            f"NLU-datasets\{dataset}\{source_language}\{dataset}_{dataset_type}_q.txt")
 
 
 def get_dataset(datasets: dict, dataset: str = "chatbot") -> dict:
@@ -59,12 +64,18 @@ def get_dataset(datasets: dict, dataset: str = "chatbot") -> dict:
     """
     results = dict()
     for key, value in datasets.items():
-        results.update({f"{key}_labels": get_source_text(dataset_type=key, dataset=dataset, labels=True)})
+        results.update({f"{key}_labels": get_source_text(dataset_type=key,
+                                                         dataset=dataset,
+                                                         labels=True)})
         for lang in value:
-            results.update({f"{key}_{lang}": get_source_text(dataset_type=key, dataset=dataset, source_language=lang)})
+            results.update({f"{key}_{lang}": get_source_text(dataset_type=key,
+                                                             dataset=dataset,
+                                                             source_language=lang)})
             if lang != "en":
-                results.update({f"{key}_{lang}_en": get_source_text(dataset_type=key, dataset=dataset,
-                                                                    source_language=lang, machine_translated=True)})
+                results.update({f"{key}_{lang}_en": get_source_text(dataset_type=key,
+                                                                    dataset=dataset,
+                                                                    source_language=lang,
+                                                                    machine_translated=True)})
     return results
 
 
@@ -90,14 +101,16 @@ def split_validation(datasets: dict, data: dict) -> dict:
                 data[f"{key}_{lang}"], \
                     data[f"{key}_{lang}_validation"], \
                     data[f"{key}_{lang}_labels"], \
-                    data[f"{key}_{lang}_labels_validation"] = split_train_data(data[f"{key}_{lang}"],
-                                                                               data[f"{key}_labels"])
+                    data[f"{key}_{lang}_labels_validation"] = split_train_data(
+                    data[f"{key}_{lang}"],
+                    data[f"{key}_labels"])
                 if lang != "en":
                     data[f"{key}_{lang}_en"], \
                         data[f"{key}_{lang}_en_validation"], \
                         data[f"{key}_{lang}_en_labels"], \
-                        data[f"{key}_{lang}_en_labels_validation"] = split_train_data(data[f"{key}_{lang}_en"],
-                                                                                      data[f"{key}_labels"])
+                        data[f"{key}_{lang}_en_labels_validation"] = split_train_data(
+                        data[f"{key}_{lang}_en"],
+                        data[f"{key}_labels"])
     return data
 
 
@@ -113,29 +126,35 @@ def plot_performance(training_data, validation_data, broad_dataset: str, dataset
     plt.show()
 
 
-def create_model(sentence_length: int, num_classes: int = 2, hidden_size: int = 768):
+def create_model(
+    sentence_length: int, num_classes: int = 2,
+    hidden_size: int = 768, kernel_size: int = 3,
+    pool_size: int = 2, activation: str = 'relu'
+):
     model = Sequential()
     model.add(tf.keras.Input(shape=(sentence_length, hidden_size)))
-    model.add(Dense(64, activation='relu'))
-    model.add(Conv1D(128, kernel_size=3, activation='relu'))
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Conv1D(256, kernel_size=3, activation='relu'))
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Conv1D(512, kernel_size=3, activation='relu'))
+    model.add(Dense(64, activation=activation))
+    model.add(Conv1D(128, kernel_size=kernel_size, activation=activation))
+    model.add(MaxPooling1D(pool_size=pool_size))
+    model.add(Conv1D(256, kernel_size=kernel_size, activation=activation))
+    model.add(MaxPooling1D(pool_size=pool_size))
+    model.add(Conv1D(512, kernel_size=kernel_size, activation=activation))
     model.add(GlobalMaxPooling1D())
     model.add(Dropout(0.1))
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256, activation=activation))
     model.add(Dense(num_classes, activation='softmax'))
     return model
 
 
 def create_adam_optimizer(lr=0.001, beta_1=0.9, beta_2=0.999, weight_decay=0, epsilon=0, amsgrad=False, clipnorm=1.0):
     # sgd is worse than adam
-    return tf.keras.optimizers.Adam(learning_rate=lr, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon, amsgrad=amsgrad,
-                                    weight_decay=weight_decay, clipnorm=clipnorm)
+    return tf.keras.optimizers.Adam(
+        learning_rate=lr, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon, amsgrad=amsgrad, decay=weight_decay,
+        clipnorm=clipnorm
+    )
 
 
-def get_classification_model(learning_rate: float, sentence_length: int,  num_classes: int, clipnorm: float = 1.0):
+def get_classification_model(learning_rate: float, sentence_length: int, num_classes: int, clipnorm: float = 1.0):
     optimizer = create_adam_optimizer(lr=learning_rate, clipnorm=clipnorm)
     classification_model = create_model(sentence_length=sentence_length, num_classes=num_classes)
 
@@ -147,8 +166,8 @@ def get_classification_model(learning_rate: float, sentence_length: int,  num_cl
     return classification_model
 
 
-def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int,
-             model_name: str, broad_dataset: str, num_classes: int = 2):
+def training(data, lang: str, learning_rate: float, sentence_length: int, batch_size: int, epochs: int, model_name: str,
+             broad_dataset: str, num_classes: int = 2):
     train_data = data[f"train_{lang}"]
     # TODO: stack attributes in different levels: test/train, language and machine translated yes/no
     # t = data["train"][lang][[identifier]]
@@ -156,10 +175,14 @@ def training(data, lang: str, learning_rate: float, sentence_length: int, batch_
     validation_data = data[f"train_{lang}_validation"]
     validation_labels = data[f"train_{lang}_labels_validation"]
 
-    print(f"train_data.shape {train_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
-    print(f"validation_data.shape {validation_data.shape}")  # (num_samples, sentence_length, hidden_size) (80, 20, 768)
-    print(f"train_labels.shape {train_labels.shape}")  # (num_samples, num_classes) (80, 2)
-    print(f"validation_labels.shape {validation_labels.shape}")  # (num_samples, num_classes) (20, 2)
+    # (num_samples, sentence_length, hidden_size)
+    print(f"train_data.shape {train_data.shape}")
+    # (num_samples, sentence_length, hidden_size)
+    print(f"validation_data.shape {validation_data.shape}")
+    # (num_samples, num_classes)
+    print(f"train_labels.shape {train_labels.shape}")
+    # (num_samples, num_classes)
+    print(f"validation_labels.shape {validation_labels.shape}")
 
     classification_model = get_classification_model(learning_rate, sentence_length, num_classes)
 

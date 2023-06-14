@@ -12,7 +12,7 @@ from model import training, \
 
 class MyModel:
     def __init__(self, batch_size: int, learning_rate: float, epochs: int, sentence_length: int, model_name: str,
-                 num_classes: int, dataset: str = "chatbot", languages=("en", "lv", "ru", "et", "lt")):
+                 num_classes: int = 2, dataset: str = "chatbot", languages=("en", "lv", "ru", "et", "lt")):
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.epochs = epochs
@@ -29,7 +29,8 @@ class MyModel:
         self.non_eng_languages = list(set(self.languages) - {"en"})
         self.non_eng_languages = [language + "_en" for language in self.non_eng_languages]
         # explicit better than implicit, making sure the order of languages is consistent across board
-        self.non_eng_languages = ['lv_en', 'ru_en', 'lt_en', 'et_en', 'lt_en']
+        self.non_eng_languages = ['lv_en', 'ru_en', 'et_en', 'lt_en']
+        self.languages = ['en', 'lv', 'ru', 'et', 'lt']
         self.csv_file_name = f"{self.dataset}_{self.model_name}_results.csv"
 
         self.tokenizer, self.model = get_embeddings_tokenizer_model(self.model_name)
@@ -81,8 +82,6 @@ class MyModel:
                             ['train_en_labels_validation', 'train_lv_en_labels_validation',
                              'train_ru_en_labels_validation',
                              'train_et_en_labels_validation', 'train_lt_en_labels_validation'])
-
-        print(self.data)
 
     def is_translated(self, translated: bool = False) -> Tuple[list, list, str, str]:
         """ Return appropriate parameters based on whether the data has been machine translated to English
@@ -209,57 +208,55 @@ class MyModel:
 
 # learning_rate=0.0001 is too small
 if __name__ == "__main__":
-    # model = MyModel(batch_size=24, learning_rate=0.001, epochs=100, sentence_length=20, model_name="xlm-roberta-base")
-    # model.train_and_test_on_same_language(translated=True)
-    # model.train_and_test_on_same_language(translated=False)
-    # model.train_on_all_languages_test_on_one(translated=True)
-    # model.train_on_all_languages_test_on_one(translated=False)
-    # model.train_on_english_test_on_non_english(translated=True)
-    # model.train_on_english_test_on_non_english(translated=False)
+    model = MyModel(batch_size=24, learning_rate=0.001, epochs=200, sentence_length=20, model_name="xlm-roberta-base")
+    model.train_and_test_on_same_language(translated=True)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)
 
-    # model = MyModel(batch_size=24, learning_rate=0.00001, epochs=100, sentence_length=20,
-    #                 model_name="bert-base-multilingual-cased", num_classes=2)
-    # model.train_and_test_on_same_language(translated=True)
-    # model.train_and_test_on_same_language(translated=False)
-    # model.train_on_all_languages_test_on_one(translated=True)
-    # model.train_on_all_languages_test_on_one(translated=False)
-    # model.train_on_english_test_on_non_english(translated=True)
-    # model.train_on_english_test_on_non_english(translated=False)
+    model = MyModel(batch_size=24, learning_rate=0.001, epochs=200, sentence_length=20,
+                    model_name="bert-base-multilingual-cased", num_classes=2)
+    model.train_and_test_on_same_language(translated=True)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)
 
-
-    model = MyModel(batch_size=6, learning_rate=0.0001, epochs=200, sentence_length=20,
+    model = MyModel(batch_size=16, learning_rate=0.0001, epochs=200, sentence_length=20,
                     model_name="bert-base-multilingual-cased", num_classes=5, dataset="askubuntu")
     model.train_and_test_on_same_language(translated=True)
-    # model.train_and_test_on_same_language(translated=False)
-    # model.train_on_all_languages_test_on_one(translated=True)
-    # model.train_on_all_languages_test_on_one(translated=False)
-    # model.train_on_english_test_on_non_english(translated=True)
-    # model.train_on_english_test_on_non_english(translated=False)
-    #
-    # model = MyModel(batch_size=6, learning_rate=0.0001, epochs=200, sentence_length=20,
-    #                 model_name="xlm-roberta-base", num_classes=5, dataset="askubuntu")
-    # model.train_and_test_on_same_language(translated=True)
-    # model.train_and_test_on_same_language(translated=False)
-    # model.train_on_all_languages_test_on_one(translated=True)
-    # model.train_on_all_languages_test_on_one(translated=False)
-    # model.train_on_english_test_on_non_english(translated=True)
-    # model.train_on_english_test_on_non_english(translated=False)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)
 
+    model = MyModel(batch_size=16, learning_rate=0.0001, epochs=200, sentence_length=20,
+                    model_name="xlm-roberta-base", num_classes=5, dataset="askubuntu")
+    model.train_and_test_on_same_language(translated=True)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)
 
-    # model = MyModel(batch_size=6, learning_rate=0.0001, epochs=10, sentence_length=20,
-    #                 model_name="bert-base-multilingual-cased", num_classes=8, dataset="webapps")
-    # model.train_and_test_on_same_language(translated=True)
-    # model.train_and_test_on_same_language(translated=False)
-    # model.train_on_all_languages_test_on_one(translated=True)
-    # model.train_on_all_languages_test_on_one(translated=False)
-    # model.train_on_english_test_on_non_english(translated=True)
-    # model.train_on_english_test_on_non_english(translated=False)
-    #
-    # model = MyModel(batch_size=6, learning_rate=0.0001, epochs=200, sentence_length=20,
-    #                 model_name="xlm-roberta-base", num_classes=5, dataset="askubuntu")
-    # model.train_and_test_on_same_language(translated=True)
-    # model.train_and_test_on_same_language(translated=False)
-    # model.train_on_all_languages_test_on_one(translated=True)
-    # model.train_on_all_languages_test_on_one(translated=False)
-    # model.train_on_english_test_on_non_english(translated=True)
-    # model.train_on_english_test_on_non_english(translated=False)
+    model = MyModel(batch_size=8, learning_rate=0.0001, epochs=200, sentence_length=20,
+                    model_name="bert-base-multilingual-cased", num_classes=5, dataset="webapps")
+    model.train_and_test_on_same_language(translated=True)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)
+
+    model = MyModel(batch_size=8, learning_rate=0.0001, epochs=200, sentence_length=20,
+                    model_name="xlm-roberta-base", num_classes=5, dataset="webapps")
+    model.train_and_test_on_same_language(translated=True)
+    model.train_and_test_on_same_language(translated=False)
+    model.train_on_all_languages_test_on_one(translated=True)
+    model.train_on_all_languages_test_on_one(translated=False)
+    model.train_on_english_test_on_non_english(translated=True)
+    model.train_on_english_test_on_non_english(translated=False)
